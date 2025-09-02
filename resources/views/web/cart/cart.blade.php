@@ -19,6 +19,7 @@
             </div>
         </div>
     </div>
+
     <section>
         <div class="container">
             <div class="cart-view my-5">
@@ -64,7 +65,7 @@
                                                             <div class="tbl_cart_product_caption">
                                                                 <h5 class="tbl_pr_title line-2 mb-1 fs-6">
                                                                     <img @if ($cartitems->item_type == 1) src="{{ helper::image_path('veg.svg') }}" @else src="{{ helper::image_path('nonveg.svg') }}" @endif
-                                                                        class="item-type-image" alt=""> 
+                                                                        class="item-type-image" alt="">
                                                                     {{ $cartitems->item_name }}
                                                                 </h5>
                                                                 @if ($cartitems->addons_id != '' || $cartitems->extras_id != '')
