@@ -124,7 +124,7 @@
                                             </div>
                                         @endif
                                     @endif
-                                    @include('web.recaptcha.recaptcha')
+
                                     <div class="form-group">
                                         <input type="checkbox" name="checkbox" id="checkbox" value="1"
                                             required class="form-check-input me-1"

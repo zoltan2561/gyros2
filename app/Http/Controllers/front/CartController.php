@@ -9,159 +9,250 @@ use App\Models\Item;
 use App\Helpers\helper;
 use App\Models\Settings;
 use Illuminate\Support\Facades\Auth;
-use Session;
+use Illuminate\Support\Facades\Session; // biztos import
+
 
 class CartController extends Controller
 {
+    public function __construct()
+    {
+        if (!\Session::isStarted()) {
+            \Session::start();
+        }
+    }
+
+
     public function index(Request $request)
     {
-        if (Auth::user() && Auth::user()->type == 2) {
-            $getcartlist = Cart::where('user_id', Auth::user()->id)->where('buynow', 0)->orderByDesc('id')->get();
+        // 1) Egységes kulcs: ha be van jelentkezve, user_id szerint, különben session_id
+        $q = \App\Models\Cart::query()->where('buynow', 0);
+
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $q->where('user_id', \Illuminate\Support\Facades\Auth::id());
         } else {
-            $getcartlist = Cart::where('session_id', Session::getId())->where('buynow', 0)->orderByDesc('id')->get();
+            $q->where('session_id', \Session::getId());
         }
 
-        $getsettings = Settings::first();
-        $itemtaxes = [];
-        $producttax = 0;
-        $tax_name = [];
-        $tax_price = [];
+        $getcartlist = $q->orderByDesc('id')->get();
 
+        $getsettings = Settings::first();
+        $tax_name = $tax_price = [];
 
         foreach ($getcartlist as $cart) {
-            $taxlist =  helper::gettax($cart->tax);
+            $taxlist = helper::gettax($cart->tax);
             if (!empty($taxlist)) {
                 foreach ($taxlist as $tax) {
-                    if (!empty($tax)) {
-                        if (!in_array($tax->name, $tax_name)) {
-                            $tax_name[] = $tax->name;
-
-                            if ($tax->type == 1) {
-                                $price = $tax->tax * $cart->qty;
-                            }
-
-                            if ($tax->type == 2) {
-                                $price = ($tax->tax / 100) * ($cart->addons_total_price + $cart->item_price) * $cart->qty;
-                            }
-                            $tax_price[] = $price;
-                        } else {
-                            if ($tax->type == 1) {
-                                $price = $tax->tax * $cart->qty;
-                            }
-
-                            if ($tax->type == 2) {
-                                $price = ($tax->tax / 100) * ($cart->addons_total_price + $cart->item_price) * $cart->qty;
-                            }
-                            $tax_price[array_search($tax->name, $tax_name)] += $price;
-                        }
+                    if (!$tax) continue;
+                    $idx = array_search($tax->name, $tax_name);
+                    $price = ($tax->type == 1)
+                        ? ($tax->tax * $cart->qty)
+                        : (($tax->tax / 100) * ($cart->addons_total_price + $cart->item_price) * $cart->qty);
+                    if ($idx === false) {
+                        $tax_name[]  = $tax->name;
+                        $tax_price[] = $price;
+                    } else {
+                        $tax_price[$idx] += $price;
                     }
                 }
             }
         }
 
-        $taxArr['tax'] = $tax_name;
-        $taxArr['rate'] = $tax_price;
+        $taxArr = ['tax' => $tax_name, 'rate' => $tax_price];
         return view('web.cart.cart', compact('getcartlist', 'getsettings', 'taxArr'));
     }
+
     public function addtocart(Request $request)
     {
         try {
-            if ($request->buynow == 1) {
-                if (Auth::user() && Auth::user()->type == 2) {
-                    Cart::where('buynow', 1)->where('user_id', Auth::user()->id)->delete();
+            // buynow mindig legyen 0/1, ne NULL
+            $buynow = (int)$request->input('buynow', 0);
+
+            // 1) töröljük az előző "buynow" sort ugyanazon kulcs alatt
+            if ($buynow === 1) {
+                if (Auth::check()) {
+                    Cart::where('buynow', 1)->where('user_id', Auth::id())->delete();
                 } else {
+                    if (!Session::isStarted()) { Session::start(); }
                     Cart::where('buynow', 1)->where('session_id', Session::getId())->delete();
                 }
             }
-            $itemdata = Item::where('slug', $request->slug)->first();
+
+            $itemdata = Item::where('slug', $request->slug)->firstOrFail();
+
+            // 2) konzisztens kulcs mentése
             $cart = new Cart();
-            if (Auth::user()) {
-                $cart->user_id = Auth::user()->id;
-                $cart->session_id = "";
+            if (Auth::check()) {
+                $cart->user_id    = Auth::id();
+                // opcionálisan megtarthatod a session_id-t is log/elemzés célra
+                if (!Session::isStarted()) { Session::start(); }
+                $cart->session_id = Session::getId();
             } else {
-                $cart->user_id = "";
+                $cart->user_id    = null; // ne üres string
+                if (!Session::isStarted()) { Session::start(); }
                 $cart->session_id = Session::getId();
             }
 
-            $cart->item_id = $itemdata->id;
-            $cart->item_name = $request->item_name;
-            $cart->item_type = $request->item_type;
-            $cart->item_image = $request->image_name;
-            $cart->tax = $request->tax;
-            $cart->item_price = helper::number_format($request->item_price);
-            $cart->addons_id = $request->addons_id == null ? null : $request->addons_id;
-            $cart->addons_name = $request->addons_name == null ? null : $request->addons_name;
-            $cart->addons_price = $request->addons_price == null ? null : $request->addons_price;
-            $cart->addons_total_price = helper::number_format($request->addons_price == "" ? 0 : array_sum(explode('| ', $request->addons_price)));
-            $cart->extras_id = $request->extras_id == null ? null : $request->extras_id;
-            $cart->extras_name = $request->extras_name == null ? null : $request->extras_name;
-            $cart->extras_price = $request->extras_price == null ? null : $request->extras_price;
-            $cart->extras_total_price = helper::number_format($request->extras_price == "" ? 0 : array_sum(explode('| ', $request->extras_price)));
-            $cart->qty = $request->qty;
-            $cart->buynow = $request->buynow;
+            $cart->item_id            = $itemdata->id;
+            $cart->item_name          = $request->item_name;
+            $cart->item_type          = $request->item_type;
+            $cart->item_image         = $request->image_name;
+            $cart->tax                = $request->tax;
+            $cart->item_price         = helper::number_format($request->item_price);
+            $cart->addons_id          = $request->addons_id ?: null;
+            $cart->addons_name        = $request->addons_name ?: null;
+            $cart->addons_price       = $request->addons_price ?: null;
+            $cart->addons_total_price = helper::number_format($request->addons_price === "" ? 0 : array_sum(explode('| ', $request->addons_price)));
+            $cart->extras_id          = $request->extras_id ?: null;
+            $cart->extras_name        = $request->extras_name ?: null;
+            $cart->extras_price       = $request->extras_price ?: null;
+            $cart->extras_total_price = helper::number_format($request->extras_price === "" ? 0 : array_sum(explode('| ', $request->extras_price)));
+            $cart->qty                = (int)$request->qty;
+            $cart->buynow             = $buynow;
             $cart->save();
 
-            if (Auth::user()) {
-                $total_count = Cart::where('user_id', Auth::user()->id)->where('buynow', 0)->count();
+            // jelképes számláló (ugyanazzal a kulccsal!)
+            if (Auth::check()) {
+                $total_count = Cart::where('user_id', Auth::id())->where('buynow', 0)->count();
             } else {
-                $oldsessionid = Session::getId();
-                Session::put('oldsessionid', $oldsessionid);
                 $total_count = Cart::where('session_id', Session::getId())->where('buynow', 0)->count();
             }
+
             session()->forget('discount_data');
-            return response()->json(['status' => 1, 'message' => trans('messages.success'), 'data' => $total_count, 'total_item_count' => helper::get_item_cart($itemdata->id), 'buynow' => $request->buynow], 200);
+
+            return response()->json([
+                'status' => 1,
+                'message' => trans('messages.success'),
+                'data' => $total_count,
+                'total_item_count' => helper::get_item_cart($itemdata->id),
+                'buynow' => $buynow
+            ], 200);
+
         } catch (\Throwable $th) {
-            return response()->json(['status' => 0, 'message' => trans('messages.wrong'), 'buynow' => $request->buynow], 200);
+            return response()->json([
+                'status' => 0,
+                'message' => trans('messages.wrong'),
+                'buynow' => (int)$request->input('buynow', 0)
+            ], 200);
         }
     }
-    public function deletecartitem(Request $request)
-    {
-        $checkcart = Cart::find($request->id);
-        if (!empty($checkcart)) {
-            $checkcart->delete();
-            session()->forget('discount_data');
-            return 1;
-        } else {
-            return 0;
-        }
-    }
+
     public function qtyupdate(Request $request)
     {
-        $checkcart = Cart::find($request->id);
-        if (Auth::user()) {
-            $total_count = Cart::where('user_id', Auth::user()->id)->sum('qty');
-        } else {
-            $total_count = Cart::where('session_id', Session::getId())->sum('qty');
+        $request->validate([
+            'id'   => 'required|integer',
+            'type' => 'required|in:plus,minus',
+        ]);
+
+        if (!\Session::isStarted()) { \Session::start(); }
+
+        // csak a SAJÁT kosár sorát engedjük módosítani
+        $row = \App\Models\Cart::query()
+            ->where('id', (int)$request->id)
+            ->when(\Illuminate\Support\Facades\Auth::check(),
+                fn($q) => $q->where('user_id', \Illuminate\Support\Facades\Auth::id()),
+                fn($q) => $q->where('session_id', \Session::getId())
+            )
+            ->where('buynow', 0)
+            ->first();
+
+        if (!$row) {
+            return response()->json(['status' => 0, 'message' => trans('messages.invalid_cart')], 404);
         }
 
-        if (!empty($checkcart)) {
-            try {
-                if ($checkcart->qty == 1 && $request->type == "minus") {
-                    $checkcart->delete();
-                    session()->forget('discount_data');
-                } else {
-                    if ($request->type == "plus") {
-                        if ($total_count < helper::appdata()->max_order_qty) {
-                            $checkcart->qty += 1;
-                            session()->forget('discount_data');
-                        } else {
-                            $msg = trans('messages.order_qty_less_then') . ' : ' . helper::appdata()->max_order_qty;
-                            return response()->json(['status' => 2, 'message' => $msg], 200);
-                        }
-                    }
-                    if ($request->type == "minus") {
-                        $checkcart->qty -= 1;
-                        session()->forget('discount_data');
-                    }
-                    $checkcart->save();
-                }
-                return response()->json(['status' => 1, 'message' => trans('messages.success')]);
-            } catch (\Throwable $th) {
-                return response()->json(['status' => 0, 'message' => trans('messages.wrong')]);
+        // teljes kosár darabszám (max_order_qty ellenőrzéshez)
+        $total_count = \App\Models\Cart::query()
+            ->when(\Illuminate\Support\Facades\Auth::check(),
+                fn($q) => $q->where('user_id', \Illuminate\Support\Facades\Auth::id()),
+                fn($q) => $q->where('session_id', \Session::getId())
+            )
+            ->where('buynow', 0)
+            ->sum('qty');
+
+        if ($request->type === 'plus') {
+            if ($total_count >= helper::appdata()->max_order_qty) {
+                $msg = trans('messages.order_qty_less_then') . ' : ' . helper::appdata()->max_order_qty;
+                return response()->json(['status' => 2, 'message' => $msg], 200);
             }
-            return response()->json(['status' => 1, 'message' => trans('messages.success')], 200);
-        } else {
-            return response()->json(['status' => 0, 'message' => trans('messages.invalid_cart')], 200);
+            $row->qty += 1;
+            $row->save();
+        } else { // minus
+            if ($row->qty <= 1) {
+                $row->delete();
+                session()->forget('discount_data');
+
+                // új kosárszám
+                $new_count = \App\Models\Cart::query()
+                    ->when(\Illuminate\Support\Facades\Auth::check(),
+                        fn($q) => $q->where('user_id', \Illuminate\Support\Facades\Auth::id()),
+                        fn($q) => $q->where('session_id', \Session::getId())
+                    )
+                    ->where('buynow', 0)
+                    ->sum('qty');
+
+                return response()->json([
+                    'status'    => 1,
+                    'removed'   => true,
+                    'qty'       => 0,
+                    'data'      => $new_count,
+                ]);
+            } else {
+                $row->qty -= 1;
+                $row->save();
+            }
         }
+
+        // sorösszeg és új kosárszám vissza a kliensnek
+        $unit = (float)$row->item_price + (float)$row->addons_total_price + (float)$row->extras_total_price;
+        $row_total = $unit * (int)$row->qty;
+
+        $new_count = \App\Models\Cart::query()
+            ->when(\Illuminate\Support\Facades\Auth::check(),
+                fn($q) => $q->where('user_id', \Illuminate\Support\Facades\Auth::id()),
+                fn($q) => $q->where('session_id', \Session::getId())
+            )
+            ->where('buynow', 0)
+            ->sum('qty');
+
+        return response()->json([
+            'status'        => 1,
+            'removed'       => false,
+            'qty'           => (int)$row->qty,
+            'row_total'     => $row_total,
+            'row_total_fmt' => helper::currency_format($row_total),
+            'data'          => $new_count, // ha van globális számláló a fejléchez
+        ]);
     }
+
+
+    public function deletecartitem(Request $request, $id = null)
+    {
+        $id = (int)($id ?? $request->input('id'));
+
+        $q = \App\Models\Cart::query()->where('id', $id);
+
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $q->where('user_id', \Illuminate\Support\Facades\Auth::id());
+        } else {
+            $q->where('session_id', \Session::getId());
+        }
+
+        $row = $q->first();
+        if (!$row) {
+            return response()->json(['status' => 0, 'message' => trans('messages.invalid_cart')], 404);
+        }
+
+        $row->delete();
+        session()->forget('discount_data');
+
+        // friss kosárszám
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $total_count = \App\Models\Cart::where('user_id', \Illuminate\Support\Facades\Auth::id())->where('buynow', 0)->count();
+        } else {
+            $total_count = \App\Models\Cart::where('session_id', \Session::getId())->where('buynow', 0)->count();
+        }
+
+        return response()->json(['status' => 1, 'message' => trans('messages.success'), 'data' => $total_count]);
+    }
+
+
 }

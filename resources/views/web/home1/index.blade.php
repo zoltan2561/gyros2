@@ -220,7 +220,7 @@
     @endif
     <!-- Promotional bannersection1 End Here -->
 
-    <!-- Table Resrvation Section Start Here -->
+    <!-- Table Resrvation kikpacoslva 10-re irva-->
     @if (helper::appdata()->online_table_booking == 1)
         <section class="table-booking sec-padding pb-0">
             <div class="container">

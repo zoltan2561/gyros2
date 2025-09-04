@@ -74,8 +74,10 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
 	Route::get('/ourteam', [WebOtherPagesController::class, 'ourteam'])->name('ourteam');
 	// reservation
 	Route::post('/reservation/store', [WebBookingsController::class, 'store']);
+    // routes/web.php
+    Route::post('/cart/add', [\App\Http\Controllers\front\CartController::class, 'addtocart'])->middleware('web');
 
-	//subscribe
+    //subscribe
 	Route::post('/subscribe', [WebOtherPagesController::class, 'subscribe'])->name('subscribe');
 
 	Route::group(['middleware' => 'NoUserAuthMiddleware'], function () {
@@ -97,6 +99,14 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
 	Route::post('/cart/deleteitem', [CartController::class, 'deletecartitem']);
 	Route::post('/cart/qtyupdate', [CartController::class, 'qtyupdate']);
 	Route::post('addtocart', [CartController::class, 'addtocart']);
+    Route::delete('/cart/{id}', [CartController::class, 'deletecartitem'])
+        ->name('cart.delete')
+        ->middleware('web');
+
+// (Ha POST-ot használsz inkább, alternatíva)
+    Route::post('/cart/delete', [CartController::class, 'deletecartitem'])
+        ->name('cart.delete.post')->middleware('web');
+
 
 	// checkout
 	Route::post('/isopenclose', [CheckoutController::class, 'isopenclose']);
