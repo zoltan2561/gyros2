@@ -407,48 +407,7 @@
 
 
     <!-- App Download Section Start Here -->
-    @if (!empty(@helper::appdata()->mobile_app_image))
-        <section class="sec-padding pb-0">
-            <div class="app_download">
-                <div class="container">
-                    <div class="bg-section-gray rounded-4">
-                        <div class="row justify-content-center">
-                            <div class="col-md-6 col-12 d-flex align-items-center position-relative">
-                                <div class="app_content">
-                                    <h1 class="text-uppercase">{{ @helper::appdata()->mobile_app_title }}</h1>
-                                    <span class="text-muted">{{ @helper::appdata()->mobile_app_description }}</span>
-                                    <div class="mt-4 d-flex">
-                                        @if (!@helper::appdata()->android == '')
-                                            <a href="{{ @helper::appdata()->android }}" target="_blank">
-                                                <img src="{{ helper::web_image_path('playstore.png') }}" width="100%"
-                                                    height="46" alt="">
-                                            </a>
-                                        @endif
-                                        @if (!@helper::appdata()->ios == '')
-                                            <a class="{{ session()->get('direction') == '2' ? 'me-3' : 'ms-3' }}"
-                                                href="{{ @helper::appdata()->ios }}" target="_blank">
-                                                <img src="{{ helper::web_image_path('appstore.svg') }}" width="100%"
-                                                    height="46" alt="">
-                                            </a>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="fry-shape-3 d-xl-block d-none">
-                                    <img src="https://modinatheme.com/html/foodking-html/assets/img/shape/fry-shape-2.png"
-                                        alt="burger-shape">
-                                </div>
-                            </div>
-                            <div
-                                class="col-md-5 col-12 d-flex justify-content-center align-items-center app-screen p-5 d-md-block d-none">
-                                <img src="{{ helper::image_path(@helper::appdata()->mobile_app_image) }}"
-                                    alt="app-screen" class="w-100 object-fit-cover">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    @endif
+
     <!-- App Download Section End Here -->
 
     <!-- recommended Section Start Here -->
@@ -737,31 +696,7 @@
 
 
     <!-- Blog Section Start Here -->
-    @if (@helper::checkaddons('blog'))
-        @if (count($getblogs) > 0)
-            <section>
-                <div class="blog-wrapper sec-padding pt-0">
-                    <div class="container">
-                        <div class="row g-2 align-items-center justify-content-between mb-sm-5 mb-4">
-                            <div class="col-auto blog-heading">
-                                <h1 class="text-uppercase">{{ trans('labels.latest_blogs') }}</h1>
-                                <p class="sub-lables text-capitalize mt-2 mb-0">{{ trans('labels.top_blogs') }}</p>
-                            </div>
-                            <div class="col-auto">
-                                <a href="{{ route('blogs') }}"
-                                    class="btn btn-sm btn-outline-primary px-4 py-2 rounded-3">{{ trans('labels.view_all') }}</a>
-                            </div>
-                        </div>
-                        <div class="row g-sm-4 g-3">
-                            @foreach ($getblogs as $bloglist)
-                                @include('web.blogs.blogview')
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </section>
-        @endif
-    @endif
+
     <!-- Blog Section End Here -->
 
     <!-- slider-gallery start Here -->

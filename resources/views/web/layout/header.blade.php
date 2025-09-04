@@ -50,8 +50,13 @@
                             href="{{ route('home') }}">{{ trans('labels.home') }}</a>
                         <a class="nav-link px-3 {{ request()->is('categories') ? 'active' : '' }}"
                             href="{{ route('categories') }}">{{ trans('labels.menu') }}</a>
-                        <a class="nav-link px-3 {{ request()->is('blogs') ? 'active' : '' }}"
-                            href="{{ route('blogs') }} ">{{ trans('labels.blogs') }}</a>
+
+
+
+
+                        <a class="nav-link px-3 {{ request()->is('kiszallitas') ? 'active' : '' }}"
+                           href="{{ url('kiszallitas.html') }}">Kiszállítás</a>
+
                         <a class="nav-link px-3 {{ request()->is('faq') ? 'active' : '' }}"
                             href="{{ route('faq') }}">{{ trans('labels.faq') }}</a>
                         <a class="nav-link px-3 {{ request()->is('contactus') ? 'active' : '' }}"
@@ -78,26 +83,7 @@
 
                     </div>
                     <div class="d-flex gap-3 align-items-center nav-sidebar-d-none">
-                        <!-- language-btn -->
-                        @if (@helper::checkaddons('language'))
-                            <div class="lag dropdown">
-                                <a class="header-box" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
-                                    aria-expanded="false"><img src="{{ helper::image_path(Session::get('flag')) }}"
-                                        class="img-fluid lag-img rounded-5" alt=""></a>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                    @foreach (helper::language() as $lang)
-                                        <li>
-                                            <a class="dropdown-item text-dark d-flex gap-2"
-                                                href="{{ URL::to('/language-' . $lang->code) }}"><img
-                                                    src="{{ helper::image_path($lang->image) }}"
-                                                    class="img-fluid lag-img rounded-5"
-                                                    alt="">{{ $lang->name }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
+
                         <div class="header-search header-box">
                             <input type="text" class="search-form" placeholder="{{ trans('labels.search_here') }}"
                                 required>

@@ -50,7 +50,7 @@
                                 <div class="card-body">
                                     <div class="">
                                         <div class="heading mb-2 border-bottom">
-                                            <h5>{{ trans('labels.order_type') }}</h5>
+                                            <h5>{{ trans('Válassz:') }}</h5>
                                         </div>
                                         <div class="col-12 d-flex gap-3">
                                             @if ($getsettings->pickup_delivery == 1)
@@ -58,14 +58,14 @@
                                                     <input class="form-check-input" type="radio" name="order_type"
                                                         value="1" checked id="delivery">
                                                     <label class="form-check-label fs-7 fw-500" for="delivery">
-                                                        {{ trans('labels.delivery') }}
+                                                        {{ trans('Kiszállítás') }}
                                                     </label>
                                                 </div>
                                                 <div class="form-check form-check-inline mb-0">
                                                     <input class="form-check-input" type="radio" name="order_type"
                                                         value="2" id="pickup">
                                                     <label class="form-check-label fs-7 fw-500" for="pickup">
-                                                        {{ trans('labels.take_away') }}
+                                                        {{ trans('Elvitelre helyben') }}
                                                     </label>
                                                 </div>
                                             @elseif($getsettings->pickup_delivery == 2)
@@ -89,51 +89,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if (helper::appdata()->ordertype_date_time == 1)
-                                <div class="card mb-3 date-view">
-                                    <div class="card-body">
-                                        <div class="heading mb-3 border-bottom">
-                                            <h5>{{ trans('labels.date_time') }}</h5>
-                                        </div>
-                                        <div class="row g-3">
-                                            <div
-                                                class="col-sm-6 delivery-date {{ session()->get('direction') == '2' ? 'text-right' : '' }}">
-                                                <label id="delivery_date"
-                                                    class="form-label justify-content-start">{{ trans('labels.delivery_date') }}
-                                                    <span class="text-danger">*</span>
-                                                </label>
-                                                <label id="pickup_date" class="form-label d-none">
-                                                    {{ trans('labels.pickup_date') }}
-                                                    <span class="text-danger">*</span>
-                                                </label>
-                                                <input type="text"
-                                                    class="form-control rounded-2 p-3 delivery_pickup_date"
-                                                    name="delivery_date" value="{{ old('delivery_date') }}"
-                                                    id="delivery_dt" min="@php echo date('Y-m-d'); @endphp">
-                                            </div>
-                                            <div
-                                                class="col-sm-6 delivery-time {{ session()->get('direction') == '2' ? 'text-right' : '' }}">
-                                                <label id="delivery_time"
-                                                    class="form-label justify-content-start">{{ trans('labels.delivery_time') }}
-                                                    <span class="text-danger">*</span>
-                                                </label>
-                                                <label id="pickup_time"
-                                                    class="form-label justify-content-start d-none">{{ trans('labels.pickup_time') }}
-                                                    <span class="text-danger">*</span>
-                                                </label>
-                                                <label id="store_close"
-                                                    class="d-none form-label text-danger label14">{{ trans('messages.restaurant_closed') }}</label>
-                                                <select name="delivery_time" id="delivery_slot_time"
-                                                    class="form-select rounded-2 py-3">
-                                                    <option value="{{ old('delivery_time') }}">
-                                                        {{ trans('labels.select') }}
-                                                    </option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
+
                             <div class="card mb-3">
                                 <div class="card-body">
                                     <div class="heading mb-2 border-bottom">
@@ -181,84 +137,57 @@
 
                             <div class="card mb-3" id="addressdiv">
                                 <div class="card-body">
-                                    <div
-                                        class="d-flex justify-content-between align-items-center heading mb-2 border-bottom">
-                                        <h5>{{ trans('labels.delivery_address') }}</h5>
+                                    <div class="d-flex justify-content-between align-items-center heading mb-2 border-bottom">
+                                        <h5>Szállítási cím</h5>
                                     </div>
+
                                     <div class="row g-3">
                                         @if (Auth::user() && Auth::user()->type == 2)
                                             <div class="col-md-9 col-sm-8">
                                                 @if ($getaddresses->count() > 0)
-                                                    <label class="form-label">{{ trans('labels.select_address') }}</label>
+                                                    <label class="form-label">Mentett cím kiválasztása</label>
                                                     <select name="address_type" id="address_type" class="form-select">
                                                         @foreach ($getaddresses as $address)
-                                                            <option value="{{ $address->id }}"
-                                                                {{ $address->is_default == 1 ? 'selected' : '' }}>
-                                                                {{ $address->title }}</option>
+                                                            <option value="{{ $address->id }}" {{ $address->is_default == 1 ? 'selected' : '' }}>
+                                                                {{ $address->title }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                 @endif
                                             </div>
                                             <div class="col-md-3 col-sm-4 py-sm-4">
-                                                <a href="{{ URL::to('/address') }}" type="button"
-                                                    class="btn btn-address mt-sm-2 w-100">
-                                                    <i class="fa-solid fa-plus mx-1"></i>
-                                                    {{ trans('labels.add_address') }}</a>
+                                                <a href="{{ URL::to('/address') }}" type="button" class="btn btn-address mt-sm-2 w-100">
+                                                    <i class="fa-solid fa-plus mx-1"></i> Új cím hozzáadása
+                                                </a>
                                             </div>
                                         @endif
+
+                                        {{-- Lakcím --}}
                                         <div class="col-12">
-                                            <label for="address" class="form-label">{{ trans('labels.address') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <textarea name="address" id="new_address" class="form-control" rows="6"
-                                                placeholder="{{ trans('labels.address') }}" required>{{ old('address') }}</textarea>
+                                            <label for="new_address" class="form-label">Lakcím <span class="text-danger">*</span></label>
+                                            <textarea name="address" id="new_address" class="form-control" rows="4" placeholder="Utca,közterület neve stb" required>{{ old('address') }}</textarea>
                                         </div>
+
+                                        {{-- Város --}}
                                         <div class="col-md-6">
-                                            <label for="landmark" class="form-label">{{ trans('labels.landmark') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="landmark" id="new_landmark"
-                                                placeholder="{{ trans('labels.landmark') }}"
-                                                value="{{ old('landmark') }}">
+                                            <label for="new_city" class="form-label">Város <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="city" id="new_city" placeholder="Pl. Vásárosnamény" value="{{ old('city') }}" required>
                                         </div>
+
+                                        {{-- Házszám --}}
                                         <div class="col-md-6">
-                                            <label for="city" class="form-label">{{ trans('labels.city') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="city" id="new_city"
-                                                placeholder="{{ trans('labels.city') }}" value="{{ old('city') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="state" class="form-label">{{ trans('labels.state') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="state" id="new_state"
-                                                placeholder="{{ trans('labels.state') }}" value="{{ old('state') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="country" class="form-label">{{ trans('labels.country') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="country" id="new_country"
-                                                placeholder="{{ trans('labels.country') }}"
-                                                value="{{ old('country') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="pincode" class="form-label">{{ trans('labels.pincode') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="pincode" id="new_pincode"
-                                                placeholder="{{ trans('labels.pincode') }}"
-                                                value="{{ old('pincode') }}">
+                                            <label for="new_house_number" class="form-label">Házszám <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="house_number" id="new_house_number" placeholder="Pl. 10/A" value="{{ old('house_number') }}" required>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+
                             <div class="card mb-3" id="shipping_area">
                                 <div class="card-body">
                                     <div class="heading mb-2 border-bottom">
-                                        <h5>{{ trans('labels.shippingarea') }}</h5>
+                                        <h5>{{ trans('Szállítási körzet:') }}</h5>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
@@ -279,12 +208,15 @@
                                 <div class="heading mb-2 border-bottom">
                                     <h2>{{ trans('labels.choose_payment') }}</h2>
                                 </div>
-                                <!-- payment-options -->
+                                {{-- payment-options --}}
                                 @include('web.paymentmethodsview')
+
                                 <div class="row g-3 justify-content-between mt-4 align-items-center">
                                     <div class="align-items-center col-sm-6 col-12">
-                                        <a href="{{ URL::to('/') }}" class="btn btn-outline-dark w-100 p-2"><i
-                                                class="fa-solid fa-circle-arrow-left {{ session()->get('direction') == '2' ? 'ms-2' : 'me-2' }}"></i>{{ trans('labels.continue_shopping') }}</a>
+                                        <a href="{{ URL::to('/') }}" class="btn btn-outline-dark w-100 p-2">
+                                            <i class="fa-solid fa-circle-arrow-left {{ session()->get('direction') == '2' ? 'ms-2' : 'me-2' }}"></i>
+                                            {{ trans('labels.continue_shopping') }}
+                                        </a>
                                     </div>
                                     <div class="align-items-center col-sm-6 col-12">
                                         <button
@@ -295,6 +227,7 @@
                                         </button>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                         <div class="col-lg-4 order-md1">
