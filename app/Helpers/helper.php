@@ -156,17 +156,22 @@ class helper
             return 0;
         }
     }
-    public static function send_pass($email, $name, $password)
+    public static function send_pass($email, $name = null, $password = null)
     {
-        $data = ['title' => trans('labels.new_password'), 'email' => $email, 'name' => $name, 'password' => $password, 'logo' => helper::image_path(@helper::appdata()->logo)];
         try {
-            Mail::send('email.email', $data, function ($message) use ($data) {
-                $message->to($data['email'])->subject($data['title']);
-            });
-            return 1;
-        } catch (\Throwable $th) {
-            dd($th->messages);
-            return 0;
+            // csak az emailt küldjük a Password brokernek
+            $status = Password::sendResetLink(['email' => $email]);
+
+            if ($status === Password::RESET_LINK_SENT) {
+                \Log::info("Password reset link sent to {$email}");
+                return true;
+            } else {
+                \Log::warning("Password reset failed for {$email}", ['status' => $status]);
+                return false;
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Password reset error', ['error' => $e->getMessage()]);
+            return false;
         }
     }
     public static function referral($email, $name, $toname, $referralmessage)

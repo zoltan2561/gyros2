@@ -1,4 +1,6 @@
 <?php
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\admin\AdminController;
@@ -47,6 +49,24 @@ use App\Http\Controllers\Admin\WhyChooseUsController;
 |
 */
 // language
+
+
+// Beépített reset route-ok
+Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+// Régi URL alias (opció A: közvetlenül ugyanarra a metódusra)
+Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('forgot-password');
+
+// (opció B: csak átirányít)
+Route::get('forgot-password', function () {
+    return redirect()->route('password.request');
+});
+
+
+
 Route::get('/language-{lang}', [LangController::class, 'change'])->name('language');
 Route::post('add-on/session/save', [AdminController::class, 'sessionsave']);
 Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], function () {
@@ -87,8 +107,8 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
 		Route::get('/verification', [WebUserController::class, 'verification'])->name('verification');
 		Route::post('/verify-otp', [WebUserController::class, 'verifyotp'])->name('verifyotp');
 		Route::get('/resend-otp', [WebUserController::class, 'resendotp']);
-		Route::get('/forgot-password', [WebUserController::class, 'forgotpassword'])->name('forgot-password');
-		Route::post('/send-pass', [WebUserController::class, 'sendpass'])->name('sendpass');
+		//Route::get('/forgot-password', [WebUserController::class, 'forgotpassword'])->name('forgot-password');
+		//Route::post('/send-pass', [WebUserController::class, 'sendpass'])->name('sendpass');
 		Route::get('/login', [WebUserController::class, 'login'])->name('login');
 		Route::post('/checklogin', [WebUserController::class, 'checklogin']);
 	});
@@ -106,6 +126,8 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
 // (Ha POST-ot használsz inkább, alternatíva)
     Route::post('/cart/delete', [CartController::class, 'deletecartitem'])
         ->name('cart.delete.post')->middleware('web');
+
+
 
 
 	// checkout
@@ -445,4 +467,6 @@ Route::group(['prefix' => 'admin', 'namespace' => 'admin'], function () {
 		Route::post('systemaddons/update', [SystemAddonsController::class, 'update']);
 	});
 	Route::get('logout', [AdminController::class, 'logout']);
+
+
 });

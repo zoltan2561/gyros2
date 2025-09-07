@@ -5,7 +5,7 @@
             <div class="container">
                 <div class="d-block d-md-flex justify-content-center align-items-center">
                     <p class="text-center mb-0"> <a href="https://1.envato.market/zaoZ4r" target="_blank"
-                            class="fs-7 text-dark">This is a demo website - Buy genuine Single Restaurant we using our
+                                                    class="fs-7 text-dark">This is a demo website - Buy genuine Single Restaurant we using our
                             official link! Click Now >>> Buy Now</a></p>
                 </div>
             </div>
@@ -16,23 +16,23 @@
             <div class="container navbar-container">
                 <a class="navbar-brand" href="{{ route('home') }}">
                     <img class="img-resposive img-fluid" src="{{ helper::image_path(@helper::appdata()->logo) }}"
-                        alt="logo">
+                         alt="logo">
                 </a>
                 <!-- language-btn -->
                 @if (@helper::checkaddons('language'))
                     <div class="buttons d-flex align-items-center">
                         <div class="dropdown d-block d-lg-none">
                             <a class="btn text-white dropdown px-1 fs-6 border-0 header-box" type="button"
-                                id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                               id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fa-solid fa-globe fs-5"></i></a>
                             <ul class="dropdown-menu {{ session()->get('direction') == '2' ? 'min-dropdown-rtl' : 'min-dropdown' }}"
                                 aria-labelledby="dropdownMenuButton1">
                                 @foreach (helper::language() as $lang)
                                     <li>
                                         <a class="dropdown-item text-dark d-flex gap-2"
-                                            href="{{ URL::to('/language-' . $lang->code) }}">
+                                           href="{{ URL::to('/language-' . $lang->code) }}">
                                             <img src="{{ helper::image_path($lang->image) }}"
-                                                class="img-fluid lag-img rounded-5" alt="">{{ $lang->name }}
+                                                 class="img-fluid lag-img rounded-5" alt="">{{ $lang->name }}
                                         </a>
                                     </li>
                                 @endforeach
@@ -47,25 +47,19 @@
                 <div class="navbar-collapse collapse">
                     <div class="navbar-nav mx-auto">
                         <a class="nav-link px-3 {{ request()->is('/') ? 'active' : '' }}"
-                            href="{{ route('home') }}">{{ trans('labels.home') }}</a>
+                           href="{{ route('home') }}">{{ trans('labels.home') }}</a>
                         <a class="nav-link px-3 {{ request()->is('categories') ? 'active' : '' }}"
-                            href="{{ route('categories') }}">{{ trans('labels.menu') }}</a>
-
-
-
-
-                        <a class="nav-link px-3 {{ request()->is('kiszallitas') ? 'active' : '' }}"
-                           href="{{ url('kiszallitas.html') }}">Kiszállítás</a>
-
+                           href="{{ route('categories') }}">{{ trans('labels.menu') }}</a>
+                       
                         <a class="nav-link px-3 {{ request()->is('faq') ? 'active' : '' }}"
-                            href="{{ route('faq') }}">{{ trans('labels.faq') }}</a>
+                           href="{{ route('faq') }}">{{ trans('labels.faq') }}</a>
                         <a class="nav-link px-3 {{ request()->is('contactus') ? 'active' : '' }}"
-                            href="{{ route('contact-us') }} ">{{ trans('labels.help_contact_us') }}</a>
+                           href="{{ route('contact-us') }} ">{{ trans('labels.help_contact_us') }}</a>
 
                         @if (env('Environment') == 'sendbox')
                             <li class="nav-item dropdown">
                                 <a class="nav-link px-3 text-white dropdown-toggle" href="javascript:void(0)"
-                                    id="menudropdown" data-bs-toggle="dropdown" aria-expanded="false">Theme</a>
+                                   id="menudropdown" data-bs-toggle="dropdown" aria-expanded="false">Theme</a>
                                 <ul class="dropdown-menu theme-menu text-black " aria-labelledby="menudropdown"
                                     id="style-3">
                                     <li>
@@ -83,10 +77,29 @@
 
                     </div>
                     <div class="d-flex gap-3 align-items-center nav-sidebar-d-none">
-
+                        <!-- language-btn -->
+                        @if (@helper::checkaddons('language'))
+                            <div class="lag dropdown">
+                                <a class="header-box" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+                                   aria-expanded="false"><img src="{{ helper::image_path(Session::get('flag')) }}"
+                                                              class="img-fluid lag-img rounded-5" alt=""></a>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    @foreach (helper::language() as $lang)
+                                        <li>
+                                            <a class="dropdown-item text-dark d-flex gap-2"
+                                               href="{{ URL::to('/language-' . $lang->code) }}"><img
+                                                    src="{{ helper::image_path($lang->image) }}"
+                                                    class="img-fluid lag-img rounded-5"
+                                                    alt="">{{ $lang->name }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         <div class="header-search header-box">
                             <input type="text" class="search-form" placeholder="{{ trans('labels.search_here') }}"
-                                required>
+                                   required>
                             @if (session()->get('direction') == '')
                                 <a href="{{ route('search') }}" class="search-button">
                                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -132,7 +145,7 @@
     @if (@helper::checkaddons('coupon'))
         @if (!empty(helper::getoffers()) && count(helper::getoffers()) > 0)
             <button class="btn btn-primary offer-button" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasOffer" aria-controls="offcanvasOffer">
+                    data-bs-target="#offcanvasOffer" aria-controls="offcanvasOffer">
                 <i class="fa-sharp fa-solid fa-badge-percent"></i> {{ trans('labels.offers') }}
             </button>
         @endif
@@ -140,15 +153,15 @@
 </div>
 <div class="offer">
     <div class="offcanvas {{ session()->get('direction') == '2' ? 'offcanvas-start' : 'offcanvas-end' }}"
-        tabindex="-1" id="offcanvasOffer" aria-labelledby="offcanvasOfferLabel">
+         tabindex="-1" id="offcanvasOffer" aria-labelledby="offcanvasOfferLabel">
         <div class="offcanvas-header border-bottom bg-light">
             <div class="d-flex d-grid gap-2 align-items-center">
                 <i class="fa-sharp fa-solid fa-badge-percent"></i>
                 <h5 class="offcanvas-title fw-600" id="offcanvasOfferLabel">{{ trans('labels.offers') }}</h5>
             </div>
             <button type="button"
-                class="btn-close {{ session()->get('direction') == '2' ? 'me-auto ms-0' : 'ms-auto me-0' }}"
-                data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    class="btn-close {{ session()->get('direction') == '2' ? 'me-auto ms-0' : 'ms-auto me-0' }}"
+                    data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
             <div class="row g-3">
@@ -165,8 +178,8 @@
                                             <span class="coupons-label">{{ $offers->offer_code }}</span>
                                             @if (request()->is('checkout'))
                                                 <p class="fw-500 cursor-pointer copy_coupon_code mb-0"
-                                                    data-bs-dismiss="offcanvas"
-                                                    onclick="getoffercode('{{ $offers->offer_code }}')">
+                                                   data-bs-dismiss="offcanvas"
+                                                   onclick="getoffercode('{{ $offers->offer_code }}')">
                                                     {{ trans('labels.copy_code') }}
                                                 </p>
                                             @endif
@@ -185,8 +198,8 @@
                                         <span class="coupons-label">{{ $offers->offer_code }}</span>
                                         @if (request()->is('checkout'))
                                             <p class="fw-500 cursor-pointer copy_coupon_code mb-0"
-                                                data-bs-dismiss="offcanvas"
-                                                onclick="getoffercode('{{ $offers->offer_code }}')">
+                                               data-bs-dismiss="offcanvas"
+                                               onclick="getoffercode('{{ $offers->offer_code }}')">
                                                 {{ trans('labels.copy_code') }}
                                             </p>
                                         @endif
@@ -230,14 +243,14 @@
             </li>
             <li class="text-center">
                 <a href="{{ Auth::user() ? route('user-favouritelist') : route('login') }}"
-                    class="{{ request()->is('favouritelist') ? 'active1' : '' }}">
+                   class="{{ request()->is('favouritelist') ? 'active1' : '' }}">
                     <i class="fa-light fa-heart"></i>
                     <p class="mb-0">{{ trans('labels.wishlist') }}</p>
                 </a>
             </li>
             <li class="text-center">
                 <a href="{{ Auth::user() ? route('user-profile') : route('login') }}"
-                    class="{{ request()->is('profile') ? 'active1' : '' }}">
+                   class="{{ request()->is('profile') ? 'active1' : '' }}">
                     <i class="fa-light fa-user"></i>
                     <p class="mb-0">{{ trans('labels.account') }}</p>
                 </a>

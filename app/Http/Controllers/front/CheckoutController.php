@@ -145,8 +145,8 @@ class CheckoutController extends Controller
     {
         try {
 
-            if ($request->transaction_type == 1 || $request->transaction_type == 2 || $request->transaction_type == 3 || $request->transaction_type == 4 || $request->transaction_type == 5 || $request->transaction_type == 6) {
-            
+            if ($request->transaction_type == 1 || $request->transaction_type == 15 || $request->transaction_type == 3 || $request->transaction_type == 4 || $request->transaction_type == 5 || $request->transaction_type == 6) {
+
                 $address = $request->address;
                 $address_type = $request->address_type;
                 $landmark = $request->landmark;
@@ -404,7 +404,7 @@ class CheckoutController extends Controller
                 }
                 session()->forget('discount_data');
                 session()->forget('userdata');
-                
+
                 if ($transaction_type == 7 || $transaction_type == 8 || $transaction_type == 9 || $transaction_type == 10 || $transaction_type == 11 || $transaction_type == 12 || $transaction_type == 13 || $transaction_type == 14) {
                     return redirect('/success-' . $order_number)->with('success', trans('messages.order_placed_note'));
                 }
@@ -446,7 +446,7 @@ class CheckoutController extends Controller
                         $minute = helper::appdata()->interval_time;
                     }
 
-                    $firsthalf = new CarbonPeriod(date("H:i", strtotime($time->open_time)), $minute . ' minutes', date("H:i", strtotime($time->break_start))); // for create use 24 hours format later change format 
+                    $firsthalf = new CarbonPeriod(date("H:i", strtotime($time->open_time)), $minute . ' minutes', date("H:i", strtotime($time->break_start))); // for create use 24 hours format later change format
 
                     $secondhalf =  new CarbonPeriod(date("H:i", strtotime($time->break_end)), $minute . ' minutes', date("H:i", strtotime($time->close_time)));
 

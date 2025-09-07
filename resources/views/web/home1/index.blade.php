@@ -124,22 +124,25 @@
                         </div>
                         <div id="category" class="owl-carousel mt-2">
                             @foreach (helper::get_categories() as $categorydata)
-                                <div class="category-wrapper category-item rounded-4">
+                                <div class="category-wrapper category-item rounded-4 reveal"
+                                     style="transition-delay: {{ ($loop->index % 6) * 80 }}ms">
                                     <a href="{{ URL::to('/menu/?category=' . $categorydata->slug) }}">
                                         <div class="d-flex justify-content-center">
                                             <div class="cat rounded-circle">
                                                 <img src="{{ helper::image_path($categorydata->image) }}"
-                                                    class="rounded-circle h-100 object-fit-cover" alt="category">
+                                                     class="rounded-circle h-100 object-fit-cover" alt="category">
                                             </div>
                                         </div>
                                     </a>
                                     <div class="text-center pt-3 category-text">
                                         <p class="fs-6 fw-500 mb-0">{{ $categorydata->category_name }}</p>
-                                        <p class="fs-7 fw-400 text-primary mb-0">{{ $categorydata->item_info->count() }}
-                                            {{ trans('labels.item') }}</p>
+                                        <p class="fs-7 fw-400 text-primary mb-0">
+                                            {{ $categorydata->item_info->count() }} {{ trans('labels.item') }}
+                                        </p>
                                     </div>
                                 </div>
                             @endforeach
+
                         </div>
                     </div>
                 </div>
@@ -796,6 +799,9 @@
         });
     </script>
     <!-- JS For Category Section -->
+
+
+
     <script>
         $(document).ready(function() {
             $("#category").owlCarousel({
@@ -1015,3 +1021,31 @@
         });
     </script>
 @endsection
+
+
+<script>
+    (function () {
+        // Ha a böngésző nem támogatja, fallback: minden azonnal látszik
+        if (!('IntersectionObserver' in window)) {
+            document.querySelectorAll('.reveal').forEach(el => el.classList.add('in-view'));
+            return;
+        }
+
+        const io = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    // Ha egyszer megjelent, nem kell többször figyelni
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px 0px -10% 0px', // kicsit előbb triggerel
+            threshold: 0.1
+        });
+
+        // Figyeljük az összes reveal elemet
+        document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    })();
+</script>

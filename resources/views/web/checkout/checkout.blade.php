@@ -208,15 +208,12 @@
                                 <div class="heading mb-2 border-bottom">
                                     <h2>{{ trans('labels.choose_payment') }}</h2>
                                 </div>
-                                {{-- payment-options --}}
+                                <!-- payment-options -->
                                 @include('web.paymentmethodsview')
-
                                 <div class="row g-3 justify-content-between mt-4 align-items-center">
                                     <div class="align-items-center col-sm-6 col-12">
-                                        <a href="{{ URL::to('/') }}" class="btn btn-outline-dark w-100 p-2">
-                                            <i class="fa-solid fa-circle-arrow-left {{ session()->get('direction') == '2' ? 'ms-2' : 'me-2' }}"></i>
-                                            {{ trans('labels.continue_shopping') }}
-                                        </a>
+                                        <a href="{{ URL::to('/') }}" class="btn btn-outline-dark w-100 p-2"><i
+                                                class="fa-solid fa-circle-arrow-left {{ session()->get('direction') == '2' ? 'ms-2' : 'me-2' }}"></i>{{ trans('labels.continue_shopping') }}</a>
                                     </div>
                                     <div class="align-items-center col-sm-6 col-12">
                                         <button
@@ -227,7 +224,6 @@
                                         </button>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                         <div class="col-lg-4 order-md1">
@@ -528,7 +524,7 @@
             .replace(/m/g, 'mm') // Month
             .replace(/d/g, 'dd'); // Day
 
-        document.getElementById("delivery_dt").setAttribute("placeholder", placeholderFormat);
+        //document.getElementById("delivery_dt").setAttribute("placeholder", placeholderFormat);
 
         flatpickr(".delivery_pickup_date", {
             dateFormat: dateFormat,
