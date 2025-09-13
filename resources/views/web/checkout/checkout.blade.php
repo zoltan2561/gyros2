@@ -25,6 +25,7 @@
             $order_total = 0;
             $total_item_qty = 0;
             $totalcarttax = 0;
+            $deliveryOn = (int) helper::app_setting('delivery_enabled', 1) === 1;
         @endphp
         @foreach ($taxArr['tax'] as $k => $tax)
             @php
@@ -50,43 +51,65 @@
                                 <div class="card-body">
                                     <div class="">
                                         <div class="heading mb-2 border-bottom">
-                                            <h5>{{ trans('Válassz:') }}</h5>
+                                            <h5>{{ trans('labels.order_type') }}</h5>
                                         </div>
+
+                                        {{-- Infó, ha a kiszállítás tiltva van --}}
+                                        @if(!$deliveryOn)
+                                            <div class="alert alert-info mb-3">
+                                                🚚 <strong>Kiszállítás átmenetileg nem elérhető</strong>
+                                            </div>
+                                        @endif
+
                                         <div class="col-12 d-flex gap-3">
-                                            @if ($getsettings->pickup_delivery == 1)
+                                            @php
+                                                // 1= mindkettő, 2= csak kiszállítás, 3= csak elvitel (projekt logika)
+                                                $mode = (int) $getsettings->pickup_delivery;
+                                            @endphp
+
+                                            {{-- Ha a kiszállítás ki van kapcsolva, csak az Elvitel választható --}}
+                                            @if(!$deliveryOn)
                                                 <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="1" checked id="delivery">
-                                                    <label class="form-check-label fs-7 fw-500" for="delivery">
-                                                        {{ trans('Kiszállítás') }}
-                                                    </label>
-                                                </div>
-                                                <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="2" id="pickup">
-                                                    <label class="form-check-label fs-7 fw-500" for="pickup">
-                                                        {{ trans('Elvitelre helyben') }}
-                                                    </label>
-                                                </div>
-                                            @elseif($getsettings->pickup_delivery == 2)
-                                                <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="1" checked id="delivery">
-                                                    <label class="form-check-label fs-7 fw-500" for="delivery">
-                                                        {{ trans('labels.delivery') }}
-                                                    </label>
-                                                </div>
-                                            @elseif($getsettings->pickup_delivery == 3)
-                                                <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="2" id="pickup" checked>
+                                                    <input class="form-check-input" type="radio" name="order_type" id="pickup" value="2" checked>
                                                     <label class="form-check-label fs-7 fw-500" for="pickup">
                                                         {{ trans('labels.take_away') }}
                                                     </label>
                                                 </div>
+                                            @else
+                                                @if ($mode === 1)
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="1" id="delivery" checked>
+                                                        <label class="form-check-label fs-7 fw-500" for="delivery">
+                                                            {{ trans('labels.delivery') }}
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="2" id="pickup">
+                                                        <label class="form-check-label fs-7 fw-500" for="pickup">
+                                                            {{ trans('labels.take_away') }}
+                                                        </label>
+                                                    </div>
+                                                @elseif ($mode === 2)
+                                                    {{-- csak kiszállítás engedélyezett a beállítás szerint --}}
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="1" id="delivery" checked>
+                                                        <label class="form-check-label fs-7 fw-500" for="delivery">
+                                                            {{ trans('labels.delivery') }}
+                                                        </label>
+                                                    </div>
+                                                @elseif ($mode === 3)
+                                                    {{-- csak elvitel engedélyezett a beállítás szerint --}}
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="2" id="pickup" checked>
+                                                        <label class="form-check-label fs-7 fw-500" for="pickup">
+                                                            {{ trans('labels.take_away') }}
+                                                        </label>
+                                                    </div>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
 
@@ -138,7 +161,7 @@
                             <div class="card mb-3" id="addressdiv">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center heading mb-2 border-bottom">
-                                        <h5>Szállítási cím</h5>
+                                        <h5>{{ trans('labels.customer_info') }}</h5>
                                     </div>
 
                                     <div class="row g-3">
@@ -164,19 +187,19 @@
 
                                         {{-- Lakcím --}}
                                         <div class="col-12">
-                                            <label for="new_address" class="form-label">Lakcím <span class="text-danger">*</span></label>
+                                            <label for="new_address" class="form-label">{{ trans('labels.address') }} <span class="text-danger">*</span></label>
                                             <textarea name="address" id="new_address" class="form-control" rows="4" placeholder="Utca,közterület neve stb" required>{{ old('address') }}</textarea>
                                         </div>
 
                                         {{-- Város --}}
                                         <div class="col-md-6">
-                                            <label for="new_city" class="form-label">Város <span class="text-danger">*</span></label>
+                                            <label for="new_city" class="form-label">{{ trans('labels.city') }}<span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="city" id="new_city" placeholder="Pl. Vásárosnamény" value="{{ old('city') }}" required>
                                         </div>
 
                                         {{-- Házszám --}}
                                         <div class="col-md-6">
-                                            <label for="new_house_number" class="form-label">Házszám <span class="text-danger">*</span></label>
+                                            <label for="new_house_number" class="form-label">{{ trans('labels.address') }} <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="house_number" id="new_house_number" placeholder="Pl. 10/A" value="{{ old('house_number') }}" required>
                                         </div>
                                     </div>
@@ -187,7 +210,7 @@
                             <div class="card mb-3" id="shipping_area">
                                 <div class="card-body">
                                     <div class="heading mb-2 border-bottom">
-                                        <h5>{{ trans('Szállítási körzet:') }}</h5>
+                                        <h5>{{ trans('labels.shippingarea') }}</h5>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
@@ -533,4 +556,30 @@
             altFormat: dateFormat,
         });
     </script>
+
+    <script>
+        (function(){
+            var deliveryOn = {{ $deliveryOn ? 'true' : 'false' }};
+            var hidden = document.getElementById('order_type');
+
+            function setHidden(val){ if(hidden){ hidden.value = val; } }
+
+            // Alapállapot
+            if (!deliveryOn) {
+                setHidden(2); // Kiszállítás tiltva → elvitel
+            } else {
+                // ha van checked radio, vegyük onnan
+                var checked = document.querySelector('input[name="order_type"]:checked');
+                setHidden(checked ? checked.value : 1);
+            }
+
+            // Változás figyelése
+            document.querySelectorAll('input[name="order_type"]').forEach(function(el){
+                el.addEventListener('change', function(e){
+                    setHidden(e.target.value);
+                });
+            });
+        })();
+    </script>
+
 @endsection

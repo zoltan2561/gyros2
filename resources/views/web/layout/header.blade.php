@@ -1,16 +1,6 @@
 <!-- header section start -->
 <header>
-    @if (env('Environment') == 'sendbox')
-        <div class="top-header">
-            <div class="container">
-                <div class="d-block d-md-flex justify-content-center align-items-center">
-                    <p class="text-center mb-0"> <a href="https://1.envato.market/zaoZ4r" target="_blank"
-                                                    class="fs-7 text-dark">This is a demo website - Buy genuine Single Restaurant we using our
-                            official link! Click Now >>> Buy Now</a></p>
-                </div>
-            </div>
-        </div>
-    @endif
+
     <div class="header-bar" id="header1">
         <nav class="navbar navbar-expand-lg sticky-top p-0">
             <div class="container navbar-container">
@@ -50,30 +40,13 @@
                            href="{{ route('home') }}">{{ trans('labels.home') }}</a>
                         <a class="nav-link px-3 {{ request()->is('categories') ? 'active' : '' }}"
                            href="{{ route('categories') }}">{{ trans('labels.menu') }}</a>
-                       
+
                         <a class="nav-link px-3 {{ request()->is('faq') ? 'active' : '' }}"
                            href="{{ route('faq') }}">{{ trans('labels.faq') }}</a>
                         <a class="nav-link px-3 {{ request()->is('contactus') ? 'active' : '' }}"
                            href="{{ route('contact-us') }} ">{{ trans('labels.help_contact_us') }}</a>
 
-                        @if (env('Environment') == 'sendbox')
-                            <li class="nav-item dropdown">
-                                <a class="nav-link px-3 text-white dropdown-toggle" href="javascript:void(0)"
-                                   id="menudropdown" data-bs-toggle="dropdown" aria-expanded="false">Theme</a>
-                                <ul class="dropdown-menu theme-menu text-black " aria-labelledby="menudropdown"
-                                    id="style-3">
-                                    <li>
-                                        <a class="nav-link" href="{{ URL::to('/?theme_id=1') }}">Theme-1</a>
-                                    </li>
-                                    <li>
-                                        <a class="nav-link" href="{{ URL::to('/?theme_id=2') }}">Theme-2 (Addon)</a>
-                                    </li>
-                                    <li>
-                                        <a class="nav-link" href="{{ URL::to('/?theme_id=3') }}">Theme-3 (Addon)</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        @endif
+
 
                     </div>
                     <div class="d-flex gap-3 align-items-center nav-sidebar-d-none">

@@ -41,14 +41,16 @@
     @endif
 
 
-   {{-- <li>
+    <li>
         <a class="{{ request()->is('wallet*') ? 'active' : '' }}" href="{{ route('user-wallet') }}">
             <i class="mx-2 fa-solid fa-wallet"></i>{{ trans('labels.my_wallet') }} </a>
     </li>
-    <li>
-        <a class="{{ request()->is('refer-earn') ? 'active' : '' }}" href="{{ route('refer-earn') }}">
-            <i class="mx-2 fa-solid fa-share-nodes"></i>{{ trans('labels.refer_earn') }} </a>
-    </li> --}}
+
+   {{-- <li>
+       <a class="{{ request()->is('refer-earn') ? 'active' : '' }}" href="{{ route('refer-earn') }}">
+           <i class="mx-2 fa-solid fa-share-nodes"></i>{{ trans('labels.refer_earn') }} </a>
+   </li> --}}
+
     <li>
         <a href="javascript:void(0)"
             onclick="logout('{{ route('logout') }}','{{ trans('messages.are_you_sure_logout') }}','{{ trans('labels.logout') }}')">

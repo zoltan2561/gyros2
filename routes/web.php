@@ -40,6 +40,7 @@ use App\Http\Controllers\admin\ShippingareaController;
 use App\Http\Controllers\admin\TaxController;
 use App\Http\Controllers\Admin\WhyChooseUsController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -56,6 +57,19 @@ Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestF
 Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+//noti email alert cucc
+Route::middleware(['auth']) //
+->post('admin/order-unprocessed-alert', [NotificationController::class, 'unprocessedAlert'])
+    ->name('admin.unprocessed.order.alert');
+
+//Delivery hivasa
+
+Route::post('/admin/toggle-delivery', [SettingController::class, 'toggleDelivery'])
+    ->name('admin.toggleDelivery')
+    ->middleware(['auth']); // <-- 'admin' törölve
+
+
 
 // Régi URL alias (opció A: közvetlenül ugyanarra a metódusra)
 Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('forgot-password');
@@ -131,10 +145,17 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
 
 
 	// checkout
-	Route::post('/isopenclose', [CheckoutController::class, 'isopenclose']);
-	Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-	Route::post('/placeorder', [CheckoutController::class, 'placeorder']);
-	Route::post('/validate_data', [CheckoutController::class, 'validate_data']);
+    Route::post('/isopenclose', [CheckoutController::class, 'isopenclose']);
+
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+
+	Route::post('/placeorder', [CheckoutController::class, 'placeorder'])
+        ->middleware(['auth', 'delivery.guard']);
+
+    Route::post('/validate_data', [CheckoutController::class, 'validate_data'])
+        ->middleware('delivery.guard'); // validálás során is bukjon el, ha közben tiltva
+
 	Route::post('/timeslot', [CheckoutController::class, 'timeslot']);
 
 	//Payment SUCCESS/FAIL

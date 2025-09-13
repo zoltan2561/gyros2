@@ -25,6 +25,7 @@
             $order_total = 0;
             $total_item_qty = 0;
             $totalcarttax = 0;
+            $deliveryOn = (int) helper::app_setting('delivery_enabled', 1) === 1;
         ?>
         <?php $__currentLoopData = $taxArr['tax']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $k => $tax): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <?php
@@ -50,47 +51,70 @@
                                 <div class="card-body">
                                     <div class="">
                                         <div class="heading mb-2 border-bottom">
-                                            <h5><?php echo e(trans('Válassz:')); ?></h5>
+                                            <h5><?php echo e(trans('labels.order_type')); ?></h5>
                                         </div>
+
+                                        
+                                        <?php if(!$deliveryOn): ?>
+                                            <div class="alert alert-info mb-3">
+                                                🚚 <strong>Kiszállítás átmenetileg nem elérhető</strong>
+                                            </div>
+                                        <?php endif; ?>
+
                                         <div class="col-12 d-flex gap-3">
-                                            <?php if($getsettings->pickup_delivery == 1): ?>
-                                                <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="1" checked id="delivery">
-                                                    <label class="form-check-label fs-7 fw-500" for="delivery">
-                                                        <?php echo e(trans('Kiszállítás')); ?>
+                                            <?php
+                                                // 1= mindkettő, 2= csak kiszállítás, 3= csak elvitel (projekt logika)
+                                                $mode = (int) $getsettings->pickup_delivery;
+                                            ?>
 
-                                                    </label>
-                                                </div>
+                                            
+                                            <?php if(!$deliveryOn): ?>
                                                 <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="2" id="pickup">
-                                                    <label class="form-check-label fs-7 fw-500" for="pickup">
-                                                        <?php echo e(trans('Elvitelre helyben')); ?>
-
-                                                    </label>
-                                                </div>
-                                            <?php elseif($getsettings->pickup_delivery == 2): ?>
-                                                <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="1" checked id="delivery">
-                                                    <label class="form-check-label fs-7 fw-500" for="delivery">
-                                                        <?php echo e(trans('labels.delivery')); ?>
-
-                                                    </label>
-                                                </div>
-                                            <?php elseif($getsettings->pickup_delivery == 3): ?>
-                                                <div class="form-check form-check-inline mb-0">
-                                                    <input class="form-check-input" type="radio" name="order_type"
-                                                        value="2" id="pickup" checked>
+                                                    <input class="form-check-input" type="radio" name="order_type" id="pickup" value="2" checked>
                                                     <label class="form-check-label fs-7 fw-500" for="pickup">
                                                         <?php echo e(trans('labels.take_away')); ?>
 
                                                     </label>
                                                 </div>
+                                            <?php else: ?>
+                                                <?php if($mode === 1): ?>
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="1" id="delivery" checked>
+                                                        <label class="form-check-label fs-7 fw-500" for="delivery">
+                                                            <?php echo e(trans('labels.delivery')); ?>
+
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="2" id="pickup">
+                                                        <label class="form-check-label fs-7 fw-500" for="pickup">
+                                                            <?php echo e(trans('labels.take_away')); ?>
+
+                                                        </label>
+                                                    </div>
+                                                <?php elseif($mode === 2): ?>
+                                                    
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="1" id="delivery" checked>
+                                                        <label class="form-check-label fs-7 fw-500" for="delivery">
+                                                            <?php echo e(trans('labels.delivery')); ?>
+
+                                                        </label>
+                                                    </div>
+                                                <?php elseif($mode === 3): ?>
+                                                    
+                                                    <div class="form-check form-check-inline mb-0">
+                                                        <input class="form-check-input" type="radio" name="order_type" value="2" id="pickup" checked>
+                                                        <label class="form-check-label fs-7 fw-500" for="pickup">
+                                                            <?php echo e(trans('labels.take_away')); ?>
+
+                                                        </label>
+                                                    </div>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
 
@@ -146,7 +170,7 @@
                             <div class="card mb-3" id="addressdiv">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center heading mb-2 border-bottom">
-                                        <h5>Szállítási cím</h5>
+                                        <h5><?php echo e(trans('labels.customer_info')); ?></h5>
                                     </div>
 
                                     <div class="row g-3">
@@ -173,19 +197,19 @@
 
                                         
                                         <div class="col-12">
-                                            <label for="new_address" class="form-label">Lakcím <span class="text-danger">*</span></label>
+                                            <label for="new_address" class="form-label"><?php echo e(trans('labels.address')); ?> <span class="text-danger">*</span></label>
                                             <textarea name="address" id="new_address" class="form-control" rows="4" placeholder="Utca,közterület neve stb" required><?php echo e(old('address')); ?></textarea>
                                         </div>
 
                                         
                                         <div class="col-md-6">
-                                            <label for="new_city" class="form-label">Város <span class="text-danger">*</span></label>
+                                            <label for="new_city" class="form-label"><?php echo e(trans('labels.city')); ?><span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="city" id="new_city" placeholder="Pl. Vásárosnamény" value="<?php echo e(old('city')); ?>" required>
                                         </div>
 
                                         
                                         <div class="col-md-6">
-                                            <label for="new_house_number" class="form-label">Házszám <span class="text-danger">*</span></label>
+                                            <label for="new_house_number" class="form-label"><?php echo e(trans('labels.address')); ?> <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="house_number" id="new_house_number" placeholder="Pl. 10/A" value="<?php echo e(old('house_number')); ?>" required>
                                         </div>
                                     </div>
@@ -196,7 +220,7 @@
                             <div class="card mb-3" id="shipping_area">
                                 <div class="card-body">
                                     <div class="heading mb-2 border-bottom">
-                                        <h5><?php echo e(trans('Szállítási körzet:')); ?></h5>
+                                        <h5><?php echo e(trans('labels.shippingarea')); ?></h5>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
@@ -564,6 +588,32 @@ unset($__errorArgs, $__bag); ?>
             altFormat: dateFormat,
         });
     </script>
+
+    <script>
+        (function(){
+            var deliveryOn = <?php echo e($deliveryOn ? 'true' : 'false'); ?>;
+            var hidden = document.getElementById('order_type');
+
+            function setHidden(val){ if(hidden){ hidden.value = val; } }
+
+            // Alapállapot
+            if (!deliveryOn) {
+                setHidden(2); // Kiszállítás tiltva → elvitel
+            } else {
+                // ha van checked radio, vegyük onnan
+                var checked = document.querySelector('input[name="order_type"]:checked');
+                setHidden(checked ? checked.value : 1);
+            }
+
+            // Változás figyelése
+            document.querySelectorAll('input[name="order_type"]').forEach(function(el){
+                el.addEventListener('change', function(e){
+                    setHidden(e.target.value);
+                });
+            });
+        })();
+    </script>
+
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('web.layout.default', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\gyros2\resources\views/web/checkout/checkout.blade.php ENDPATH**/ ?>

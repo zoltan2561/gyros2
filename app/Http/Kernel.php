@@ -7,6 +7,8 @@ use Auth;
 
 class Kernel extends HttpKernel
 {
+
+
     /**
      * The application's global HTTP middleware stack.
      *
@@ -69,7 +71,10 @@ class Kernel extends HttpKernel
         'AdminAuth' => \App\Http\Middleware\AdminAuth::class,
         'ApiAuth' => \App\Http\Middleware\ApiAuth::class,
         'UserMiddleware' => \App\Http\Middleware\UserMiddleware::class,
-        'MaintenanceMiddleware' => \App\Http\Middleware\MaintenanceMiddleware::class,  
-        'NoUserAuthMiddleware' => \App\Http\Middleware\NoUserAuthMiddleware::class,  
+        'MaintenanceMiddleware' => \App\Http\Middleware\MaintenanceMiddleware::class,
+        'NoUserAuthMiddleware' => \App\Http\Middleware\NoUserAuthMiddleware::class,
+        //deliver védelem
+        'delivery.guard' => \App\Http\Middleware\EnsureDeliveryAvailable::class,
+
     ];
 }

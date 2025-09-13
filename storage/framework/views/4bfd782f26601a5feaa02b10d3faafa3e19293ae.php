@@ -1,1 +1,0 @@
-<?php /**PATH C:\xampp\htdocs\gyros2\resources\views/web/wallet/index.blade.php ENDPATH**/ ?>

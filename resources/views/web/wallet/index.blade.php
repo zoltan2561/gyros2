@@ -33,9 +33,10 @@
                                 <p class="title mb-0">{{ trans('labels.my_wallet') }} :- <small
                                         class="green_color">{{ helper::currency_format(Auth::user()->wallet) }}</small></p>
                             </div>
-                            <div class="col-auto"><a href="{{ route('add-money') }}"
+
+                           {{-- <div class="col-auto"><a href="{{ route('add-money') }}"
                                     class="btn btn-sm text-white bg-primary px-4 py-2"><i
-                                        class="fa-solid fa-plus px-1"></i>{{ trans('labels.add_money') }}</a></div>
+                                        class="fa-solid fa-plus px-1"></i>{{ trans('labels.add_money') }}</a></div> --}}
                         </div>
                         <div class="border-bottom">
                             <ul class="mb-3">

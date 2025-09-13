@@ -115,4 +115,8 @@ return [
         ],
     ],
 
+
+    'admin_email' => env('MAIL_ADMIN_EMAIL', ''), // vesszővel elválasztott lista is lehet
+    'admin_name'  => env('MAIL_ADMIN_NAME', 'Admin'),
+
 ];

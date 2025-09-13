@@ -41,7 +41,13 @@
     <?php endif; ?>
 
 
+    <li>
+        <a class="<?php echo e(request()->is('wallet*') ? 'active' : ''); ?>" href="<?php echo e(route('user-wallet')); ?>">
+            <i class="mx-2 fa-solid fa-wallet"></i><?php echo e(trans('labels.my_wallet')); ?> </a>
+    </li>
+
    
+
     <li>
         <a href="javascript:void(0)"
             onclick="logout('<?php echo e(route('logout')); ?>','<?php echo e(trans('messages.are_you_sure_logout')); ?>','<?php echo e(trans('labels.logout')); ?>')">

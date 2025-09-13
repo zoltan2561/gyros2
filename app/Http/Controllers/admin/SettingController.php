@@ -10,6 +10,7 @@ use App\Models\Pixcel;
 use App\Models\Settings;
 use App\Models\SocialLinks;
 use Illuminate\Support\Facades\Validator;
+use App\Helpers\helper;
 
 class SettingController extends Controller
 {
@@ -412,5 +413,16 @@ class SettingController extends Controller
             $setting->save();
         }
         return redirect('admin/settings')->with('success', trans('messages.success'));
+    }
+
+    public function toggleDelivery()
+    {
+        $current = (int) helper::app_setting('delivery_enabled', 1);
+        $new = $current ? 0 : 1;
+        helper::set_app_setting('delivery_enabled', (string)$new);
+
+        return back()->with('success', $new
+            ? 'Kiszállítás bekapcsolva.'
+            : 'Kiszállítás kikapcsolva.');
     }
 }

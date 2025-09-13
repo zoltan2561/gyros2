@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Lunaweb\RecaptchaV3\Facades\RecaptchaV3;
+use Illuminate\Support\Facades\Schema;   // + ezt add hozzá
 
 class UserController extends Controller
 {
@@ -34,143 +35,140 @@ class UserController extends Controller
     public function create(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'mobile' => 'required|numeric',
-            'checkbox' => 'accepted'
+            'name'    => 'required',
+            'email'   => 'required|email',
+            'mobile'  => 'required|numeric',
+            'checkbox'=> 'accepted',
         ], [
-            'name.required' => trans('messages.name_required'),
-            'email.required' => trans('messages.email_required'),
-            'email.email' => trans('messages.valid_email'),
-            'mobile.required' => trans('messages.mobile_required'),
-            'mobile.numeric' => trans('messages.numbers_only'),
-            'checkbox.accepted' => trans('messages.accept_terms'),
+            'name.required'       => trans('messages.name_required'),
+            'email.required'      => trans('messages.email_required'),
+            'email.email'         => trans('messages.valid_email'),
+            'mobile.required'     => trans('messages.mobile_required'),
+            'mobile.numeric'      => trans('messages.numbers_only'),
+            'checkbox.accepted'   => trans('messages.accept_terms'),
         ]);
+
         $email = "";
         $password = "";
         $login_type = "";
         $google_id = "";
         $facebook_id = "";
+
         if (session()->has('social_login')) {
             if (session()->get('social_login')['google_id'] != "") {
                 $login_type = "google";
-                $google_id = session()->get('social_login')['google_id'];
-                $email = session()->get('social_login')['email'];
+                $google_id  = session()->get('social_login')['google_id'];
+                $email      = session()->get('social_login')['email'];
             }
             if (session()->get('social_login')['facebook_id'] != "") {
-                $login_type = "facebook";
+                $login_type  = "facebook";
                 $facebook_id = session()->get('social_login')['facebook_id'];
-                $email = session()->get('social_login')['email'];
+                $email       = session()->get('social_login')['email'];
             }
         } else {
-            $email = $request->email;
-            $email = $request->email;
-            $password = Hash::make($request->password);
+            $email      = $request->email;
+            $password   = Hash::make($request->password);
             $login_type = "email";
         }
-        $otp = rand(100000, 999999);
-        $checkreferral = User::select('id', 'name', 'referral_code', 'wallet', 'email', 'token')->where('referral_code', $request->referral_code)->where('is_available', 1)->where('is_deleted',2)->first();
-        if ($request->has('referral_code') && $request->referral_code != "") {
-            if (empty($checkreferral)) {
-                return redirect()->back()->with('error', trans('messages.invalid_referral_code'));
-            }
+
+        // Referral és egyediség ellenőrzések maradnak
+        $checkreferral = User::select('id','name','referral_code','wallet','email','token')
+            ->where('referral_code', $request->referral_code)
+            ->where('is_available', 1)->where('is_deleted', 2)->first();
+
+        if ($request->filled('referral_code') && empty($checkreferral)) {
+            return redirect()->back()->with('error', trans('messages.invalid_referral_code'));
         }
-        $checkmobile = User::where('mobile', $request->mobile)->where('is_available', 1)->where('is_deleted',2)->first();
+
+        $checkmobile = User::where('mobile', $request->mobile)->where('is_available',1)->where('is_deleted',2)->first();
         if (!empty($checkmobile)) {
             return redirect()->back()->with('error', trans('messages.mobile_exist'));
         }
-        $checkemail = User::where('email', $request->email)->where('is_available', 1)->where('is_deleted',2)->first();
+
+        $checkemail = User::where('email', $request->email)->where('is_available',1)->where('is_deleted',2)->first();
         if (!empty($checkemail)) {
             return redirect()->back()->with('error', trans('messages.email_exist'));
         }
-        if (@helper::checkaddons('otp') == 1) {
-          
-            $verification = sms_helper::verificationsms($request->mobile, $otp);
-        } else {
-            $verification = helper::verificationemail($email, $otp);
+
+        // ⚡️ KIKAPCSOLJUK az OTP/E-MAIL KÜLDÉST:
+        // Nem hívunk sms_helper::verificationsms / helper::verificationemail függvényeket.
+        // Úgy tekintjük, hogy a "verifikáció" sikeres.
+        $otp = null;
+
+        // User létrehozása azonnali "verified" állapottal
+        $user = new User;
+        $user->name          = $request->name;
+        $user->mobile        = $request->mobile;
+        $user->email         = $email;
+        $user->profile_image = 'unknown.png';
+        $user->password      = $password;    // social login esetén üres maradhat, ahogy eddig is
+        $user->login_type    = $login_type;
+        $user->google_id     = $google_id;
+        $user->facebook_id   = $facebook_id;
+        $user->referral_code = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz'), 0, 10);
+        $user->otp           = $otp;
+        $user->type          = 2;
+        $user->is_available  = 1;
+
+        // ha van referral kód, töltsük az ideiglenes mezőket
+        if ($request->filled('referral_code') && !empty($checkreferral)) {
+            $user->user_id         = $checkreferral->id;
+            $user->referral_amount = helper::appdata()->referral_amount;
         }
 
-        if ($verification == 0) {
-            $user = new User;
-            $user->name = $request->name;
-            $user->mobile = $request->mobile;
-            $user->email = $email;
-            $user->profile_image = 'unknown.png';
-            $user->password = $password;
-            $user->login_type = $login_type;
-            $user->google_id = $google_id;
-            $user->facebook_id = $facebook_id;
-            $user->referral_code = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz'), 0, 10);
-            $user->otp = $otp;
-            $user->type = 2;
-            $user->is_available = 1;
-            if ($request->has('referral_code') && $request->referral_code != "" && !empty($checkreferral)) {
-                $user->user_id = $checkreferral->id;
-                $user->referral_amount = helper::appdata()->referral_amount;
-            }
-            if (@helper::checkaddons('email_settings'))
-            {
-                $user->is_verified = 2;
-            }else{
-                $user->is_verified = 1;
-            }
-          
-            $user->save();
-            session()->forget('social_login');
-
-            if (@helper::checkaddons('email_settings'))
-                {
-                    if (@helper::checkaddons('otp') == 1) {
-                        session()->put('verification_email', $request->mobile);
-                    } else {
-                        session()->put('verification_email', $email);
-                    }
-        
-                    if (env('Environment') == 'sendbox') {
-                        session()->put('verification_otp', $otp);
-                    }
-                    return redirect(route('verification'))->with('success', trans('messages.success'));
-                }else{
-                    if ($request->referral_code != "") {
-                        $checkuser = User::where('email', $checkreferral->email)->first();
-                        
-                        // ---- for referral user ------
-                        $checkreferraluser = User::find($checkuser->id);
-
-                        $checkreferraluser->wallet += helper::appdata()->referral_amount;
-                        $checkreferraluser->update();
-                        $referral_tr = new Transaction;
-                        $referral_tr->user_id = $checkreferraluser->id;
-                        $referral_tr->amount = helper::appdata()->referral_amount;
-                        $referral_tr->transaction_type = 11;
-                        $referral_tr->username = $checkuser->name;
-                        $referral_tr->save();
-                        // ---- for new user ------
-                        $checkusernew = User::where('email', $email)->first();
-
-                        $checkusernew->wallet = helper::appdata()->referral_amount;
-                        $checkusernew->user_id = "";
-                        $checkusernew->referral_amount = 0;
-                        $checkusernew->update();
-                        $new_user_tr = new Transaction;
-                        $new_user_tr->user_id = $checkusernew->id;
-                        $new_user_tr->amount = helper::appdata()->referral_amount;
-                        $new_user_tr->transaction_type = 11;
-                        $new_user_tr->username = $checkreferraluser->name;
-                        $new_user_tr->save();
-                        $title = trans('labels.referral_earning');
-                        $body = 'Your friend "' . $checkuser->name . '" has used your referral code to register with Our Restaurant. You have earned "' . helper::currency_format(helper::appdata()->referral_amount) . '" referral amount in your wallet.';
-                        helper::push_notification($checkreferraluser->token, $title, $body, "wallet", "");
-                        $referralmessage = 'Your friend "' . $checkuser->name . '" has used your referral code to register with Restaurant User. You have earned "' . helper::appdata()->currency . '' . number_format(helper::appdata()->referral_amount, 2) . '" referral amount in your wallet.';
-                        helper::referral($checkreferraluser->email, $checkuser->name, $checkreferraluser->name, $referralmessage);
-                    }
-                    return redirect(route('login'))->with('success', trans('messages.success'));
-                }
-              
-        } else {
-            return redirect()->back()->with('error', trans('messages.email_error'));
+        // ⬅️ FONTOS: tekintsük megerősítettnek
+        $user->is_verified      = 1;
+        if (Schema::hasColumn('users','email_verified_at')) {
+            $user->email_verified_at = now();
         }
+
+        $user->save();
+        session()->forget('social_login');
+
+        // Referral jóváírás (megtartjuk az eddigi logikát)
+        if ($request->filled('referral_code') && !empty($checkreferral)) {
+            $checkuser = User::where('email', $checkreferral->email)->first();
+
+            // ---- ajánló ----
+            $checkreferraluser = User::find($checkuser->id);
+            $checkreferraluser->wallet += helper::appdata()->referral_amount;
+            $checkreferraluser->update();
+
+            $referral_tr = new Transaction;
+            $referral_tr->user_id          = $checkreferraluser->id;
+            $referral_tr->amount           = helper::appdata()->referral_amount;
+            $referral_tr->transaction_type = 11;
+            $referral_tr->username         = $checkuser->name;
+            $referral_tr->save();
+
+            // ---- új user ----
+            $checkusernew = User::where('email', $email)->first();
+            $checkusernew->wallet           = helper::appdata()->referral_amount;
+            $checkusernew->user_id          = "";
+            $checkusernew->referral_amount  = 0;
+            $checkusernew->update();
+
+            $new_user_tr = new Transaction;
+            $new_user_tr->user_id          = $checkusernew->id;
+            $new_user_tr->amount           = helper::appdata()->referral_amount;
+            $new_user_tr->transaction_type = 11;
+            $new_user_tr->username         = $checkreferraluser->name;
+            $new_user_tr->save();
+
+            $title = trans('labels.referral_earning');
+            $body  = 'Your friend "' . $checkuser->name . '" has used your referral code to register with Our Restaurant. You have earned "' . helper::currency_format(helper::appdata()->referral_amount) . '" referral amount in your wallet.';
+            helper::push_notification($checkreferraluser->token, $title, $body, "wallet", "");
+
+            $referralmessage = 'Your friend "' . $checkuser->name . '" has used your referral code to register with Restaurant User. You have earned "' . helper::appdata()->currency . '' . number_format(helper::appdata()->referral_amount, 2) . '" referral amount in your wallet.';
+            helper::referral($checkreferraluser->email, $checkuser->name, $checkreferraluser->name, $referralmessage);
+        }
+
+        // 🔐 Azonnali beléptetés és irány a főoldal
+        Auth::login($user);
+
+        return redirect()->route('home')->with('success', trans('messages.success'));
     }
+
     public function verification(Request $request)
     {
         return view('web.auth.verification');

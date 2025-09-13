@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Auth;
 use DateTime;
 use Exception;
 use Stripe;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class CheckoutController extends Controller
 {
@@ -91,53 +93,68 @@ class CheckoutController extends Controller
     }
     public function isopenclose(Request $request)
     {
-        if ($request->buynow == null || $request->buynow == 0) {
-            $buynow = 0;
-        } else {
-            $buynow = 1;
-        }
+        $buynow = ($request->buynow == null || $request->buynow == 0) ? 0 : 1;
 
         if (@helper::appdata()->timezone != "") {
             date_default_timezone_set(helper::appdata()->timezone);
         }
-        $admin = User::first();
-        $date = date('Y/m/d h:i:sa');
-        if ($admin->is_online == 1) {
-            if (Auth::user() && Auth::user()->type == 2) {
-                $cartdata = Cart::where('user_id', Auth::user()->id)->where('buynow', $buynow)->get();
-            } else {
-                $cartdata = Cart::where('session_id', Session::getId())->where('buynow', $buynow)->get();
-            }
 
-            if ($request->qty > helper::appdata()->max_order_qty) {
-                $msg = trans('messages.order_qty_less_then') . ' : ' . helper::appdata()->max_order_qty;
-                return response()->json(['status' => 2, 'message' => $msg], 200);
-            } elseif (count($cartdata) <= 0) {
-                return response()->json(['status' => 2, 'message' => trans('messages.cart_is_empty')], 200);
-            } elseif ($request->order_amount < helper::appdata()->min_order_amount || $request->order_amount > helper::appdata()->max_order_amount) {
-                $msg = trans('messages.order_amount_must_between') . ' ' . helper::currency_format(helper::appdata()->min_order_amount) . ' and ' . helper::currency_format(helper::appdata()->max_order_amount);
-                return response()->json(['status' => 2, 'message' => $msg], 200);
-            } else {
-                if (@helper::checkaddons('customer_login')) {
-                    if (Auth::user() && Auth::user()->type == 2) {
-                        return response()->json(['status' => 3, 'message' => trans('messages.success')], 200);
-                    } else {
-                        if (helper::appdata()->login_required == 1) {
-                            if (helper::appdata()->is_checkout_login_required == 1) {
-                                return response()->json(['status' => 4, 'message' => trans('messages.success')], 200);
-                            } else {
-                                return response()->json(['status' => 1, 'message' => trans('messages.success')], 200);
-                            }
-                        } else {
-                            return response()->json(['status' => 3, 'message' => trans('messages.success')], 200);
-                        }
-                    }
-                } else {
-                    return response()->json(['status' => 3, 'message' => trans('messages.success')], 200);
-                }
-            }
-        } else {
+        // a bolt user (ne User::first)
+        $admin = \App\Models\User::whereIn('type',[1,4])->first();
+        if (!$admin) {
             return response()->json(['status' => 0, 'message' => trans('messages.restaurant_closed')], 200);
+        }
+
+        // 1) ON/OFF kapcsoló
+        if ((int)$admin->is_online !== 1) {
+            return response()->json(['status' => 0, 'message' => trans('messages.restaurant_closed')], 200);
+        }
+        //TODO: átirni 10-re a zarast
+        // 2) STATIKUS NYITVATARTÁS: 08:00–22:00 minden nap  ⬇⬇⬇
+        $now   = Carbon::now();
+        $open  = Carbon::create($now->year, $now->month, $now->day, 8, 0, 0, $now->timezone);
+        $close = Carbon::create($now->year, $now->month, $now->day, 24, 0, 0, $now->timezone);
+
+        // nyitva: 08:00-tól 22:00-ig (22:00-kor már zárva)
+        if (!($now->greaterThanOrEqualTo($open) && $now->lessThan($close))) {
+            return response()->json(['status' => 0, 'message' => trans('messages.restaurant_closed')], 200);
+        }
+        // 2) ⬆⬆⬆
+
+        // --- a te meglévő ellenőrzéseid maradhatnak, változtatás nélkül ---
+        // kosár, min/max stb...
+        if (auth()->check() && auth()->user()->type == 2) {
+            $cartdata = \App\Models\Cart::where('user_id', auth()->id())->where('buynow', $buynow)->get();
+        } else {
+            $cartdata = \App\Models\Cart::where('session_id', \Session::getId())->where('buynow', $buynow)->get();
+        }
+
+        if ($request->qty > helper::appdata()->max_order_qty) {
+            $msg = trans('messages.order_qty_less_then') . ' : ' . helper::appdata()->max_order_qty;
+            return response()->json(['status' => 2, 'message' => $msg], 200);
+        } elseif ($cartdata->count() <= 0) {
+            return response()->json(['status' => 2, 'message' => trans('messages.cart_is_empty')], 200);
+        } elseif ($request->order_amount < helper::appdata()->min_order_amount || $request->order_amount > helper::appdata()->max_order_amount) {
+            $msg = trans('messages.order_amount_must_between') . ' ' . helper::currency_format(helper::appdata()->min_order_amount) . ' and ' . helper::currency_format(helper::appdata()->max_order_amount);
+            return response()->json(['status' => 2, 'message' => $msg], 200);
+        } else {
+            if (@helper::checkaddons('customer_login')) {
+                if (auth()->check() && auth()->user()->type == 2) {
+                    return response()->json(['status' => 3, 'message' => trans('messages.success')], 200);
+                } else {
+                    if (helper::appdata()->login_required == 1) {
+                        if (helper::appdata()->is_checkout_login_required == 1) {
+                            return response()->json(['status' => 4, 'message' => trans('messages.success')], 200);
+                        } else {
+                            return response()->json(['status' => 1, 'message' => trans('messages.success')], 200);
+                        }
+                    } else {
+                        return response()->json(['status' => 3, 'message' => trans('messages.success')], 200);
+                    }
+                }
+            } else {
+                return response()->json(['status' => 3, 'message' => trans('messages.success')], 200);
+            }
         }
     }
 
@@ -145,7 +162,7 @@ class CheckoutController extends Controller
     {
         try {
 
-            if ($request->transaction_type == 1 || $request->transaction_type == 15 || $request->transaction_type == 3 || $request->transaction_type == 4 || $request->transaction_type == 5 || $request->transaction_type == 6) {
+            if ($request->transaction_type == 1 || $request->transaction_type == 2 || $request->transaction_type == 3 || $request->transaction_type == 4 || $request->transaction_type == 5 || $request->transaction_type == 6) {
 
                 $address = $request->address;
                 $address_type = $request->address_type;
@@ -312,7 +329,7 @@ class CheckoutController extends Controller
                 $order->discount_amount = helper::number_format(0);
             }
             $order->transaction_type = $transaction_type;
-            if ($transaction_type != 1 && $transaction_type != 2 || $transaction_type != 15) {
+            if ($transaction_type != 1 && $transaction_type != 2 ) {
                 $order->transaction_id = $transaction_id;
             }
             $order->tax_amount = $tax;
@@ -411,6 +428,28 @@ class CheckoutController extends Controller
                 if (@helper::checkaddons('whatsapp_message')) {
                     if (whatsapp_helper::whatsapp_message_config()->order_created == 1) {
                         whatsapp_helper::whatsappmessage($order_number);
+                    }
+                }
+                // === HŰSÉG BÓNUSZ: 50 Ft / 1000 Ft (csak bejelentkezett usernek, egyszer / rendelés) ===
+                if (Auth::check()) {
+                    $user = Auth::user();
+
+                    // grand_total a rendelésen (HUF). Igazítsd, ha mást használsz.
+                    $grandTotalFt = (int) round($order->grand_total);
+                    $bonus = (int) (floor($grandTotalFt / 1000) * 50);
+
+                    if ($bonus > 0) {
+                        // Cache alapú idempotencia: ha már jóváírtuk ennél az order_id-nél, ne írjuk jóvá újra
+                        $cacheKey = 'loyalty_bonus_applied_order_' . $order->id;
+
+                        if (\Illuminate\Support\Facades\Cache::add($cacheKey, 1, now()->addDays(30))) {
+                            // atomi növelés: wallet = wallet + bonus
+                            \Illuminate\Support\Facades\DB::table('users')
+                                ->where('id', $user->id)
+                                ->update([
+                                    'wallet' => \Illuminate\Support\Facades\DB::raw('wallet + ' . (int)$bonus)
+                                ]);
+                        }
                     }
                 }
 
@@ -565,5 +604,13 @@ class CheckoutController extends Controller
         } else {
             return redirect('/checkout?buynow='.Session::get('buynow'));
         }
+    }
+
+
+    //uj hűségpont logika
+    private function computeLoyaltyBonusFt(int $grandTotalFt): int
+    {
+        if ($grandTotalFt <= 0) return 0;
+        return (int) (floor($grandTotalFt / 1000) * 50);
     }
 }

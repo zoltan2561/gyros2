@@ -1,17 +1,8 @@
 <header class="page-topbar">
-    <?php if(env('Environment') == 'sendbox'): ?>
-        <div class="top-header-main">
-            <div class="top-header">
-                <div class="container">
-                    <div class="d-block d-md-flex justify-content-center align-items-center">
-                        <p class="text-center mb-0"> <a href="https://1.envato.market/zaoZ4r" target="_blank"
-                                class="fs-7 text-white">This is a demo website - Buy genuine Single Restaurant we using
-                                our official link! Click Now >>> Buy Now</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
+
+
+
+
     <div class="navbar-header">
         <div class="">
             <button class="navbar-toggler d-lg-none d-md-block px-md-4 px-3" type="button" data-bs-toggle="collapse"
@@ -21,31 +12,40 @@
         </div>
         <div class="px-md-3 px-0 d-flex align-items-center">
 
-            <?php if(Auth::user()->type == 1): ?>
-                <?php if(helper::check_restaurant_closed() == 1): ?>
-                    <?php
-                        $tooltiptitle = trans('messages.online_note');
-                    ?>
+            <?php if(Auth::user()->type == 1 || Auth::user()->type == 4): ?>
+                
+                <?php if(helper::check_restaurant_closed() == 1 ): ?>
+                    <?php $tooltiptitle = trans('messages.online_note'); ?>
                     <input id="open-close-switch" type="checkbox" class="checkbox-switch" name="open-close"
-                        value="1" checked
-                        <?php if(env('Environment') == 'sendbox'): ?> onclick="myFunction()" disabled <?php else: ?> onclick="changeStatus(2,'<?php echo e(URL::to('admin/change-status')); ?>')" <?php endif; ?>>
+                           value="1" checked
+                           <?php if(env('Environment') == 'sendbox'): ?> onclick="myFunction()" disabled
+                           <?php else: ?> onclick="changeStatus(2,'<?php echo e(URL::to('admin/change-status')); ?>')" <?php endif; ?>>
                 <?php else: ?>
-                    <?php
-                        $tooltiptitle = trans('messages.offline_note');
-                    ?>
+                    <?php $tooltiptitle = trans('messages.offline_note'); ?>
                     <input id="open-close-switch" type="checkbox" class="checkbox-switch" name="open-close"
-                        value=""
-                        <?php if(env('Environment') == 'sendbox'): ?> onclick="myFunction()" disabled <?php else: ?> onclick="changeStatus(1,'<?php echo e(URL::to('admin/change-status')); ?>')" <?php endif; ?>>
+                           value=""
+                           <?php if(env('Environment') == 'sendbox'): ?> onclick="myFunction()" disabled
+                           <?php else: ?> onclick="changeStatus(1,'<?php echo e(URL::to('admin/change-status')); ?>')" <?php endif; ?>>
                 <?php endif; ?>
                 <label for="open-close-switch" class="switch me-3" data-bs-toggle="tooltip" title="<?php echo e($tooltiptitle); ?>">
-                    <span class="<?php echo e(session()->get('direction') == 2 ? 'switch__circle-rtl' : 'switch__circle'); ?>"><span
-                            class="switch__circle-inner"></span></span>
-                    <span
-                        class="switch__left <?php echo e(session()->get('direction') == 2 ? 'pe-2' : 'ps-2'); ?>"><?php echo e(trans('labels.off')); ?></span>
-                    <span
-                        class="switch__right <?php echo e(session()->get('direction') == 2 ? 'ps-2' : 'pe-2'); ?>"><?php echo e(trans('labels.on')); ?></span>
+        <span class="<?php echo e(session()->get('direction') == 2 ? 'switch__circle-rtl' : 'switch__circle'); ?>">
+            <span class="switch__circle-inner"></span>
+        </span>
+                    <span class="switch__left <?php echo e(session()->get('direction') == 2 ? 'pe-2' : 'ps-2'); ?>"><?php echo e(trans('labels.off')); ?></span>
+                    <span class="switch__right <?php echo e(session()->get('direction') == 2 ? 'ps-2' : 'pe-2'); ?>"><?php echo e(trans('labels.on')); ?></span>
                 </label>
+
+                
+                <form method="POST" action="<?php echo e(route('admin.toggleDelivery')); ?>" class="d-inline">
+                    <?php echo csrf_field(); ?>
+                    <?php $deliveryOn = (int)\App\Helpers\helper::app_setting('delivery_enabled', 1) === 1; ?>
+                    <button type="submit" class="btn btn-sm <?php echo e($deliveryOn ? 'btn-warning' : 'btn-success'); ?>">
+                        <?php echo e($deliveryOn ? '🚚 Kiszállítás kikapcsolása' : '🚚 Kiszállítás bekapcsolása'); ?>
+
+                    </button>
+                </form>
             <?php endif; ?>
+
             <?php if(@helper::checkaddons('language')): ?>
                 <div class="position-relative mx-1">
                     <div class="dropdown d-lg-block d-none">

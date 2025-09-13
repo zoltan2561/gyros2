@@ -27,6 +27,9 @@ use App\Models\AgeVerification;
 use App\Models\Tax;
 use App\Models\TopDeals;
 use Carbon\Carbon;
+use App\Models\AppSetting;
+use Illuminate\Support\Facades\Password;
+
 
 class helper
 {
@@ -357,10 +360,13 @@ class helper
         return $taxes;
     }
 
+
+
     public static function footer_features()
     {
         return FooterFeatures::select('id', 'icon', 'title', 'description')->orderByDesc('id')->get();
     }
+
     public static function get_categories()
     {
         return Category::with('item_info')->select('id', 'category_name', 'slug', 'image')->where('is_available', '=', '1')->where('is_deleted', '2')->orderBy('reorder_id')->get();
@@ -509,6 +515,9 @@ class helper
         return $check;
     }
 
+
+
+
     public static function checkthemeaddons($addons)
     {
         if (session()->get('demo') == "free-addon") {
@@ -520,4 +529,20 @@ class helper
         }
         return $check;
     }
+
+//delivery kaplcsolohoz
+    // delivery kapcsolóhoz
+    public static function app_setting(string $key, $default = null)
+    {
+        return cache()->remember("app_setting:$key", 60, fn() => AppSetting::get($key, $default));
+    }
+
+    public static function set_app_setting(string $key, $value)
+    {
+        AppSetting::set($key, $value);
+        cache()->forget("app_setting:$key");
+        return $value;
+    }
+
+
 }
