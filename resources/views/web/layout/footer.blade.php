@@ -105,20 +105,9 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="bg-primary">
-        <div class="container">
-            <div
-                class="d-flex flex-wrap gap-2 align-items-center justify-content-md-between justify-content-center text-center py-3">
-                <p class="text-white fs-7 mb-0">{{ helper::appdata()->copyright }}</p>
-                <div class="footer-card-image d-flex gap-2">
-                    @foreach (helper::paymentlist() as $payment)
-                        <div class="card-img">
-                            <img src="{{ helper::image_path($payment->image) }}" class="h-100 w-100" alt="">
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+   <div class="container" style="max-width: 800px;">
+        <div class="d-flex flex-column align-items-center text-center py-4">
+            <p class="text-white fs-6 mb-0">{{ helper::appdata()->copyright }}</p>
         </div>
     </div>
 </footer>

@@ -7,6 +7,8 @@
             <th><?php echo e(trans('labels.category')); ?></th>
             <th><?php echo e(trans('labels.featured')); ?></th>
             <th><?php echo e(trans('labels.status')); ?></th>
+            <th><?php echo e(__('Ma nem elérhető')); ?></th>
+
             <th><?php echo e(trans('labels.created_date')); ?></th>
             <th><?php echo e(trans('labels.updated_date')); ?></th>
             <th><?php echo e(trans('labels.action')); ?></th>
@@ -47,6 +49,30 @@
                             <i class="fa-sharp fa-solid fa-xmark"></i></a>
                     <?php endif; ?>
                 </td>
+
+
+                <td>
+                    <?php if($item->today_unavailable == 0): ?>
+                        
+                        <a class="btn btn-sm btn-danger square"
+                           tooltip="Ma nem elérhető"
+                           onclick="ToggleTodayUnavailable('<?php echo e($item->id); ?>','<?php echo e(route('admin.item.today-unavailable')); ?>')">
+                            <i class="fa-sharp fa-solid fa-xmark"></i>
+                        </a>
+                    <?php else: ?>
+                        
+                        <a class="btn btn-sm btn-success square"
+                           tooltip="Ma elérhető (kattintva letiltod mára)"
+                           onclick="ToggleTodayUnavailable('<?php echo e($item->id); ?>','<?php echo e(route('admin.item.today-unavailable')); ?>')">
+                            <i class="fa-sharp fa-solid fa-check"></i>
+                        </a>
+                    <?php endif; ?>
+                </td>
+
+
+
+
+
                 <td>
                     <?php echo e(helper::date_format($item->created_at)); ?> <br>
                     <?php echo e(helper::time_format($item->created_at)); ?>
@@ -67,8 +93,40 @@
                             <i class="fa fa-trash"></i></a>
                     </div>
                 </td>
+
+
             </tr>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </tbody>
 </table>
+<script>
+    function ToggleTodayUnavailable(id, url) {
+        // ha van, vedd a globális tokenből; ha nincs, így is jó:
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: { id: id, _token: token },
+            beforeSend: function(){
+                // opcionális: loading állapot
+            },
+            success: function(res){
+                if (res && res.success) {
+                    // 1) Minimál: frissítsük az oldalt, biztos vizuális állapotváltás
+                    location.reload();
+
+                    // 2) Ha nem akarsz reloadot, akkor itt cseréld a gomb színét/ikonját
+                    // és tooltipjét (de a reload a legegyszerűbb és bombabiztos).
+                } else {
+                    alert('Nem sikerült frissíteni.');
+                }
+            },
+            error: function(xhr){
+                console.error(xhr.responseText || xhr.statusText);
+                alert('Hiba történt a frissítés közben.');
+            }
+        });
+    }
+</script>
 <?php /**PATH C:\xampp\htdocs\gyros2\resources\views/admin/item/table.blade.php ENDPATH**/ ?>

@@ -119,22 +119,45 @@
                                         <h5>{{ trans('labels.customer_info') }}</h5>
                                     </div>
                                     <div class="row">
+                                        @php
+                                            $full = (Auth::user() && Auth::user()->type == 2) ? trim(Auth::user()->name) : '';
+                                            // Alap: a korábbi (old) értékek élvezzenek elsőbbséget
+                                            $firstPrefill = old('first_name');
+                                            $lastPrefill  = old('last_name');
+
+                                            if (!$firstPrefill && $full) {
+                                                // Többszörös szóközök kezelése, unicode barát
+                                                $parts = preg_split('/\s+/u', $full, -1, PREG_SPLIT_NO_EMPTY);
+                                                if (count($parts) >= 2) {
+                                                    $firstPrefill = array_shift($parts);
+                                                    $lastPrefill  = implode(' ', $parts);
+                                                } else {
+                                                    $firstPrefill = $full;
+                                                    $lastPrefill  = '';
+                                                }
+                                            }
+                                        @endphp
+
                                         <div class="col-md-6 mb-3">
-                                            <label for="first_name" class="form-label">{{ trans('labels.first_name') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="first_name" id="first_name"
-                                                placeholder="{{ trans('labels.first_name') }}"
-                                                value="{{ Auth::user() && Auth::user()->type == 2 ? Auth::user()->name : old('first_name') }}"
-                                                required>
+                                            <label for="first_name" class="form-label">{{ trans('labels.first_name') }} <span class="text-danger">*</span></label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   name="first_name"
+                                                   id="first_name"
+                                                   placeholder="{{ trans('labels.first_name') }}"
+                                                   value="{{ $firstPrefill }}"
+                                                   required>
                                         </div>
+
                                         <div class="col-md-6 mb-3">
-                                            <label for="last_name" class="form-label">{{ trans('labels.last_name') }}
-                                                <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text" class="form-control" name="last_name" id="last_name"
-                                                placeholder="{{ trans('labels.last_name') }}"
-                                                value="{{ old('last_name') }}" required>
+                                            <label for="last_name" class="form-label">{{ trans('labels.last_name') }} <span class="text-danger">*</span></label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   name="last_name"
+                                                   id="last_name"
+                                                   placeholder="{{ trans('labels.last_name') }}"
+                                                   value="{{ $lastPrefill }}"
+                                                   required>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="email" class="form-label">{{ trans('labels.email') }}
@@ -190,18 +213,23 @@
                                             <label for="new_address" class="form-label">{{ trans('labels.address') }} <span class="text-danger">*</span></label>
                                             <textarea name="address" id="new_address" class="form-control" rows="4" placeholder="Utca,közterület neve stb" required>{{ old('address') }}</textarea>
                                         </div>
+                                            {{-- Város (automatikusan kitöltve a szállítási területből) --}}
+                                            <div class="col-md-6">
+                                                <label for="new_city" class="form-label">
+                                                    {{ trans('labels.city') }} <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text"
+                                                       class="form-control"
+                                                       name="city"
+                                                       id="new_city"
+                                                       placeholder="Pl. Vásárosnamény"
+                                                       value="{{ old('city') }}"
+                                                       required
+                                                       readonly>
+                                                <small class="text-muted">A város a kiválasztott szállítási területből töltődik.</small>
+                                            </div>
 
-                                        {{-- Város --}}
-                                        <div class="col-md-6">
-                                            <label for="new_city" class="form-label">{{ trans('labels.city') }}<span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" name="city" id="new_city" placeholder="Pl. Vásárosnamény" value="{{ old('city') }}" required>
-                                        </div>
 
-                                        {{-- Házszám --}}
-                                        <div class="col-md-6">
-                                            <label for="new_house_number" class="form-label">{{ trans('labels.address') }} <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" name="house_number" id="new_house_number" placeholder="Pl. 10/A" value="{{ old('house_number') }}" required>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -581,5 +609,39 @@
             });
         })();
     </script>
+    <script>
+        (function(){
+            var areaSel = document.getElementById('delivery_area');
+            var cityInp = document.getElementById('new_city');
+
+            function firstWordFromOption(optText){
+                // első "szó" levétele, utólagos vessző/kötőjel letisztítással
+                var t = (optText || '').trim();
+                if (!t) return '';
+                var first = t.split(/\s+/)[0];         // első szó
+                first = first.replace(/[.,;:-]+$/, ''); // záró írásjelek le
+                return first;
+            }
+
+            function syncCity(){
+                var opt = areaSel.options[areaSel.selectedIndex];
+                if (!opt || !opt.value) {
+                    cityInp.value = '';
+                    return;
+                }
+                cityInp.value = firstWordFromOption(opt.text);
+            }
+
+            if (areaSel && cityInp) {
+                areaSel.addEventListener('change', syncCity);
+                // betöltéskor is frissítünk (ha már ki van választva valami)
+                syncCity();
+            }
+        })();
+    </script>
+
+
+
+
 
 @endsection

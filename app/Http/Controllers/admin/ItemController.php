@@ -20,6 +20,41 @@ use Illuminate\Support\Str;
 
 class ItemController extends Controller
 {
+
+
+    //ma nem elérhető uj controllere
+    public function toggleTodayUnavailable(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer'
+        ]);
+
+        $item = Item::findOrFail($request->id);
+        $today = date('Y-m-d');
+
+        if ((int)$item->today_unavailable === 0) {
+            // → Ha most jelölik be: állítsuk "ma nem elérhető"-re
+            $item->today_unavailable = 1;
+            $item->unavailable_date = $today;
+            $item->item_status = 0; // inaktív lesz ma
+        } else {
+            // → Ha levesszük a pipát: újra elérhető
+            $item->today_unavailable = 0;
+            $item->unavailable_date = null;
+            $item->item_status = 1; // aktív újra
+        }
+
+        $item->save();
+
+        return response()->json([
+            'success' => true,
+            'today_unavailable' => (int)$item->today_unavailable,
+            'item_status' => (int)$item->item_status
+        ]);
+    }
+
+
+
     public function index(Request $request)
     {
         $getitem = Item::with('category_info', 'subcategory_info', 'item_image')->select('item.*')->join('categories', 'item.cat_id', '=', 'categories.id')->where('categories.is_available', '1')->orderBy('item.reorder_id');

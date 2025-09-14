@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Helpers\helper;
-
+//TODO:bekötni élesben is
 class EnsureDeliveryAvailable
 {
     public function handle(Request $request, Closure $next)

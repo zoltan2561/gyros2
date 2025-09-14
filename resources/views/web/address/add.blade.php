@@ -54,7 +54,7 @@
                                         <textarea rows="6" class="form-control" name="address" placeholder="{{ trans('labels.address') }}" id="address"
                                             required>{{ old('address') }}</textarea>
                                     @endif
-                                </div>
+                               {{-- </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="country" class="form-label">{{ trans('labels.country') }}
                                         <span class="text-danger">*</span>
@@ -69,6 +69,7 @@
                                     <input type="text" class="form-control" name="state" id="state"
                                         placeholder="{{ trans('labels.state') }}" value="{{ old('state') }}" required>
                                 </div>
+                                --}}
                                 <div class="col-md-6 mb-3">
                                     <label for="city" class="form-label">{{ trans('labels.city') }}
                                         <span class="text-danger">*</span>
@@ -76,42 +77,44 @@
                                     <input type="text" class="form-control" name="city" id="city"
                                         placeholder="{{ trans('labels.city') }}" value="{{ old('city') }}" required>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="landmark" class="form-label">{{ trans('labels.landmark') }}
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" name="landmark" id="landmark"
-                                        placeholder="{{ trans('labels.landmark') }}" value="{{ old('landmark') }}"
-                                        required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="pincode" class="form-label">{{ trans('labels.pincode') }}
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" name="pincode" id="pincode"
-                                        placeholder="{{ trans('labels.pincode') }}" value="{{ old('pincode') }}" required>
-                                </div>
-                                <div class="col-md-6 my-4">
-                                    <div class="form-group mt-3">
-                                        <div class="{{ session()->get('direction') == '2' ? 'd-flex gap-2' : 'form-check' }}">
-                                            <input class="form-check-input" type="checkbox" value="1"
-                                                id="flexCheckDefault" name="is_default">
-                                            <label class="form-check-label" for="flexCheckDefault">
-                                                {{ trans('labels.default') }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12 {{ session()->get('direction') == '2' ? 'text-start' : 'text-end' }}">
-                                    <button type="submit"
-                                        class="btn bg-primary text-white px-4 py-2">{{ trans('labels.save_address_details') }}</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    @include('web.subscribeform')
+    {{--
+ <div class="col-md-6 mb-3">
+     <label for="landmark" class="form-label">{{ trans('labels.landmark') }}
+         <span class="text-danger">*</span>
+     </label>
+     <input type="text" class="form-control" name="landmark" id="landmark"
+         placeholder="{{ trans('labels.landmark') }}" value="{{ old('landmark') }}"
+         required>
+ </div>
+ --}}
+ <div class="col-md-6 mb-3">
+     <label for="pincode" class="form-label">{{ trans('labels.pincode') }}
+         <span class="text-danger">*</span>
+     </label>
+     <input type="text" class="form-control" name="pincode" id="pincode"
+         placeholder="{{ trans('labels.pincode') }}" value="{{ old('pincode') }}" required>
+ </div>
+ <div class="col-md-6 my-4">
+     <div class="form-group mt-3">
+         <div class="{{ session()->get('direction') == '2' ? 'd-flex gap-2' : 'form-check' }}">
+             <input class="form-check-input" type="checkbox" value="1"
+                 id="flexCheckDefault" name="is_default">
+             <label class="form-check-label" for="flexCheckDefault">
+                 {{ trans('labels.default') }}
+             </label>
+         </div>
+     </div>
+ </div>
+ <div class="col-12 {{ session()->get('direction') == '2' ? 'text-start' : 'text-end' }}">
+     <button type="submit"
+         class="btn bg-primary text-white px-4 py-2">{{ trans('labels.save_address_details') }}</button>
+ </div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</section>
+@include('web.subscribeform')
 @endsection

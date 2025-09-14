@@ -8,15 +8,21 @@
             <div class="breadcrumb-sec-content">
                 <nav class="text-dark breadcrumb-divider" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li
-                            class="breadcrumb-item {{ session()->get('direction') == '2' ? 'breadcrumb-item-rtl ps-0' : '' }}">
+                        <li class="breadcrumb-item">
                             <a class="text-dark fw-600" href="{{ URL::to('/') }}">{{ trans('labels.home') }}</a>
                         </li>
-                        <li
-                            class="breadcrumb-item {{ session()->get('direction') == '2' ? 'breadcrumb-item-rtl ps-0' : '' }} active">
-                            {{ trans('labels.categories') }}
+
+                        {{-- ÚJ: Kategóriák link a lista oldalra --}}
+                        <li class="breadcrumb-item">
+                            <a class="text-dark fw-600" href="{{ url('categories') }}">{{ trans('labels.categories') }}</a>
+                        </li>
+
+                        {{-- Aktuális kategória neve --}}
+                        <li class="breadcrumb-item active" aria-current="page">
+                            {{ $currentCategory->category_name ?? \Illuminate\Support\Str::headline(str_replace('-', ' ', request('category'))) }}
                         </li>
                     </ol>
+
                 </nav>
             </div>
         </div>

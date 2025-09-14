@@ -53,22 +53,8 @@
                                         <textarea rows="6" class="form-control" name="address" placeholder="{{ trans('labels.address') }}" required>{{ $addressdata->address }} </textarea>
                                     @endif
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="country" class="form-label">{{ trans('labels.country') }}
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" name="country" id="country"
-                                        placeholder="{{ trans('labels.country') }}" value="{{ $addressdata->country }}"
-                                        required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="state" class="form-label">{{ trans('labels.state') }}
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" name="state" id="state"
-                                        placeholder="{{ trans('labels.state') }}" value="{{ $addressdata->state }}"
-                                        required>
-                                </div>
+
+
                                 <div class="col-md-6 mb-3">
                                     <label for="city" class="form-label">{{ trans('labels.city') }}
                                         <span class="text-danger">*</span>
@@ -77,14 +63,7 @@
                                         placeholder="{{ trans('labels.city') }}" value="{{ $addressdata->city }}"
                                         required>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="landmark" class="form-label">{{ trans('labels.landmark') }}
-                                        <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" name="landmark" id="landmark"
-                                        placeholder="{{ trans('labels.landmark') }}" value="{{ $addressdata->landmark }}"
-                                        required>
-                                </div>
+
                                 <div class="col-md-6 mb-3">
                                     <label for="pincode" class="form-label">{{ trans('labels.pincode') }}
                                         <span class="text-danger">*</span>

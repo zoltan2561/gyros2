@@ -8,13 +8,21 @@
             <div class="breadcrumb-sec-content">
                 <nav class="text-dark breadcrumb-divider" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li
-                            class="breadcrumb-item {{ session()->get('direction') == '2' ? 'breadcrumb-item-rtl ps-0' : '' }}">
-                            <a class="text-dark fw-600" href="{{ route('home') }}">{{ trans('labels.home') }}</a>
+                        <li class="breadcrumb-item">
+                            <a class="text-dark fw-600" href="{{ URL::to('/') }}">{{ trans('labels.home') }}</a>
                         </li>
-                        <li class="breadcrumb-item {{ session()->get('direction') == '2' ? 'breadcrumb-item-rtl ps-0' : '' }} active"
-                            aria-current="page">{{ trans('item details') }}</li>
+
+                        {{-- ÚJ: Kategóriák link a lista oldalra --}}
+                        <li class="breadcrumb-item">
+                            <a class="text-dark fw-600" href="{{ url('categories') }}">{{ trans('labels.categories') }}</a>
+                        </li>
+
+                        {{-- Aktuális kategória neve --}}
+                        <li class="breadcrumb-item active" aria-current="page">
+                            {{ $currentCategory->category_name ?? \Illuminate\Support\Str::headline(str_replace('-', ' ', request('category'))) }}
+                        </li>
                     </ol>
+
                 </nav>
             </div>
         </div>
@@ -26,6 +34,7 @@
                     <div class="col-lg-5 col-12 mb-3">
                         <div class="item-img-cover">
                             {{-- image --}}
+
                             <div class="card h-100 overflow-hidden rounded-0 border-0 position-relative">
                                 <!-- new big-view -->
                                 <div class="sp-loading"><img src="https://via.placeholder.com/1100x1220" alt=""
@@ -116,7 +125,7 @@
 
                                 $var = ["{eye}", "{count}"];
                                 $newvar   = ["<i class='fa-solid fa-eye'></i>", rand(Helper::appdata()->min_view_count,Helper::appdata()->max_view_count)];
-                                
+
                                 $fake_view = str_replace($var, $newvar, Helper::appdata()->fake_view_message);
                                 @endphp
                                 <div class="d-flex gap-1 align-items-center blink_me mb-2">
@@ -124,7 +133,7 @@
                                 </div>
                                 @endif
                             @endif
-                            
+
                             <div class="d-flex pb-2 border-bottom">
                                 <div class="col-auto">
                                     @if ($getitemdata->tax != '' && $getitemdata->tax != 0)

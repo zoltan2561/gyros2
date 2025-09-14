@@ -158,9 +158,41 @@ class CheckoutController extends Controller
         }
     }
 
+
+
     public function placeorder(Request $request)
     {
+
         try {
+            // === Kötelező (csak kiszállításnál): CÍM + VÁROS ===========================
+            if ((int)$request->input('order_type') === 1) {
+
+                // kis normalizálás (felesleges szóközök eltüntetése)
+                $addressNorm = preg_replace('/\s+/u', ' ', trim((string)$request->input('address')));
+                $cityNorm    = preg_replace('/\s+/u', ' ', trim((string)$request->input('city')));
+                $request->merge(['address' => $addressNorm, 'city' => $cityNorm]);
+
+                $validator = \Validator::make($request->all(), [
+                    // address-ben legyen legalább egy szám (házszám)
+                    'address' => ['required','string','min:5','max:255','regex:/\d+/'],
+                    'city'    => ['required','string','min:2','max:100'],
+                ], [
+                    'address.required' => 'A cím megadása kötelező.',
+                    'address.regex'    => 'Kérjük, a házszámot is adja meg a címben (pl. "Petőfi u. 26").',
+                    'city.required'    => 'A város megadása kötelező.',
+                ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'status'  => 0,
+                        'code'    => 'validation_error',
+                        'message' => $validator->errors()->first(),
+                        'errors'  => $validator->errors(),
+                    ], 200);
+                }
+            }
+// ===========================================================================
+
 
             if ($request->transaction_type == 1 || $request->transaction_type == 2 || $request->transaction_type == 3 || $request->transaction_type == 4 || $request->transaction_type == 5 || $request->transaction_type == 6) {
 
@@ -239,6 +271,53 @@ class CheckoutController extends Controller
                 }
             }
             $transaction_id = $transaction_id;
+
+
+            /* === MIN. RENDELÉSI ÖSSZEG CHECK (csak kiszállításnál, VÉGÖSSZEGBŐL) ===== */
+            if ((int)$order_type === 1) {
+                // kis helper a "340.00HUF", "5 000", "5,000.00" stb. parse-olására
+                $toFloat = function($val): float {
+                    if (is_null($val)) return 0.0;
+                    if (is_numeric($val)) return (float)$val;
+                    $s = preg_replace('/[^\d.,]/u', '', (string)$val);
+                    if ($s === '' || $s === null) return 0.0;
+                    if (strpos($s, ',') !== false && strpos($s, '.') === false) {
+                        $s = str_replace(',', '.', $s);   // "5 000,00" -> "5000.00"
+                    } else {
+                        $s = str_replace(',', '', $s);    // "5,000.00" -> "5000.00"
+                    }
+                    return is_numeric($s) ? (float)$s : 0.0;
+                };
+
+                // 1) Szállítási díj → zóna → min rendelés
+                $dc = (int) round($toFloat($delivery_charge));
+                $minRequired = ($dc <= 1100) ? 2500 : (($dc <= 1900) ? 4900 : 5900);
+
+                // 2) VÉGÖSSZEG (grand_total) a limithez
+                //$gt = (int) round($toFloat($grand_total));             // pl. 5000
+                // Ha inkább a szállítás NÉLKÜLI összeggel hasonlítanál, ezt használd:
+                 $gt = max(0, (int) round($toFloat($grand_total)) - (int) round($toFloat($delivery_charge)));
+
+                if ($gt < $minRequired) {
+                    $missing = $minRequired - $gt;
+                    return response()->json([
+                        'status'  => 0,
+                        'code'    => 'min_order_not_met',
+                        'message' => 'Nincs meg a minimum rendelési összeg: '.$minRequired.' Ft. '
+                            . 'Jelenlegi (végösszeg): '.$gt.' Ft. Hiányzik: '.$missing.' Ft.',
+                    ], 200);
+                }
+            }
+            /* ======================================================================== */
+
+
+
+
+
+
+
+
+
 
             if (Auth::user() && Auth::user()->type == 2) {
                 $checkuser = User::where('is_available', 1)->where('id', Auth::user()->id)->first();
@@ -413,6 +492,8 @@ class CheckoutController extends Controller
                     $itemdata = OrderDetails::where('order_id', $order->id)->get();
                 }
 
+
+
                 $admindata = User::select('id', 'name', 'email', 'mobile')->where('type', 1)->first();
                 if (Auth::user() && Auth::user()->type == 2) {
                     $admin_invoice = helper::create_order_invoice($admindata->email, $checkuser->name, $order_number, $orderdata, $itemdata);
@@ -430,11 +511,13 @@ class CheckoutController extends Controller
                         whatsapp_helper::whatsappmessage($order_number);
                     }
                 }
+
+
                 // === HŰSÉG BÓNUSZ: 50 Ft / 1000 Ft (csak bejelentkezett usernek, egyszer / rendelés) ===
                 if (Auth::check()) {
                     $user = Auth::user();
 
-                    // grand_total a rendelésen (HUF). Igazítsd, ha mást használsz.
+                    // grand_total a rendelésen (HUF). TODO:marad?
                     $grandTotalFt = (int) round($order->grand_total);
                     $bonus = (int) (floor($grandTotalFt / 1000) * 50);
 
@@ -457,6 +540,10 @@ class CheckoutController extends Controller
             } else {
                 return response()->json(['status' => 0, 'message' => trans('messages.wrong')], 200);
             }
+
+
+
+
         } catch (\Throwable $th) {
             dd($th);
             return response()->json(['status' => 0, 'message' => trans('messages.wrong')], 200);

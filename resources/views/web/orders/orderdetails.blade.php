@@ -43,10 +43,12 @@
                                         @endif
                                     @endif
                                 @endif
-                                @if ($orderdata->status_type == 1)
-                                    <a class="btn btn-danger btn-sm mx-1 px-4 py-2 " href="javascript:void(0)"
-                                        onclick="cancelorder('{{ $orderdata->order_number }}','{{ URL::to('/orders/cancel') }}')"><i class="fa-regular fa-trash {{ session()->get('direction') == '2' ? 'ms-1' : 'me-1' }}"></i>{{ trans('labels.cancel_order') }}</a>
-                                @endif
+
+                               {{-- @if ($orderdata->status_type == 1)
+                                          <a class="btn btn-danger btn-sm mx-1 px-4 py-2 " href="javascript:void(0)"
+                                              onclick="cancelorder('{{ $orderdata->order_number }}','{{ URL::to('/orders/cancel') }}')"><i class="fa-regular fa-trash {{ session()->get('direction') == '2' ? 'ms-1' : 'me-1' }}"></i>{{ trans('labels.cancel_order') }}</a>
+                                      @endif --}}
+
                             </div>
                         </div>
                         <div class="row mb-5 g-3">

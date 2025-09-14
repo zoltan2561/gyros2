@@ -7,6 +7,8 @@
             <th>{{ trans('labels.category') }}</th>
             <th>{{ trans('labels.featured') }}</th>
             <th>{{ trans('labels.status') }}</th>
+            <th>{{ __('Ma nem elérhető') }}</th>
+
             <th>{{ trans('labels.created_date') }}</th>
             <th>{{ trans('labels.updated_date') }}</th>
             <th>{{ trans('labels.action') }}</th>
@@ -47,6 +49,30 @@
                             <i class="fa-sharp fa-solid fa-xmark"></i></a>
                     @endif
                 </td>
+
+
+                <td>
+                    @if ($item->today_unavailable == 0)
+                        {{-- Default: nem elérhető (piros X) --}}
+                        <a class="btn btn-sm btn-danger square"
+                           tooltip="Ma nem elérhető"
+                           onclick="ToggleTodayUnavailable('{{ $item->id }}','{{ route('admin.item.today-unavailable') }}')">
+                            <i class="fa-sharp fa-solid fa-xmark"></i>
+                        </a>
+                    @else
+                        {{-- Ha be van kapcsolva: elérhető (zöld pipa) --}}
+                        <a class="btn btn-sm btn-success square"
+                           tooltip="Ma elérhető (kattintva letiltod mára)"
+                           onclick="ToggleTodayUnavailable('{{ $item->id }}','{{ route('admin.item.today-unavailable') }}')">
+                            <i class="fa-sharp fa-solid fa-check"></i>
+                        </a>
+                    @endif
+                </td>
+
+
+
+
+
                 <td>
                     {{ helper::date_format($item->created_at) }} <br>
                     {{ helper::time_format($item->created_at) }}
@@ -65,7 +91,39 @@
                             <i class="fa fa-trash"></i></a>
                     </div>
                 </td>
+
+
             </tr>
         @endforeach
     </tbody>
 </table>
+<script>
+    function ToggleTodayUnavailable(id, url) {
+        // ha van, vedd a globális tokenből; ha nincs, így is jó:
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: { id: id, _token: token },
+            beforeSend: function(){
+                // opcionális: loading állapot
+            },
+            success: function(res){
+                if (res && res.success) {
+                    // 1) Minimál: frissítsük az oldalt, biztos vizuális állapotváltás
+                    location.reload();
+
+                    // 2) Ha nem akarsz reloadot, akkor itt cseréld a gomb színét/ikonját
+                    // és tooltipjét (de a reload a legegyszerűbb és bombabiztos).
+                } else {
+                    alert('Nem sikerült frissíteni.');
+                }
+            },
+            error: function(xhr){
+                console.error(xhr.responseText || xhr.statusText);
+                alert('Hiba történt a frissítés közben.');
+            }
+        });
+    }
+</script>

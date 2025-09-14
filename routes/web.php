@@ -150,8 +150,8 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 
-	Route::post('/placeorder', [CheckoutController::class, 'placeorder'])
-        ->middleware(['auth', 'delivery.guard']);
+	Route::post('/placeorder', [CheckoutController::class, 'placeorder']);
+
 
     Route::post('/validate_data', [CheckoutController::class, 'validate_data'])
         ->middleware('delivery.guard'); // validálás során is bukjon el, ha közben tiltva
@@ -349,6 +349,11 @@ Route::group(['prefix' => 'admin', 'namespace' => 'admin'], function () {
 		Route::get('/getextras', [ItemController::class, 'getextras']);
 		Route::post('item/deleteextras', [ItemController::class, 'deleteextras']);
 		Route::post('item/reorder_item', [ItemController::class, 'reorder_item']);
+
+
+        Route::post('admin/item/today-unavailable', [ItemController::class, 'toggleTodayUnavailable'])
+            ->name('admin.item.today-unavailable')
+            ->middleware('auth'); // vagy a megszokott admin middleware-ed
 
 		// payment
 		Route::get('payment', [PaymentController::class, 'index']);

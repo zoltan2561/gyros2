@@ -50,24 +50,25 @@ class OrderController extends Controller
 
         if ($request->statustype == "2") {
             $title = @helper::gettype($request->status, $request->statustype, $orderdata->order_type)->name;
-            $body = 'Your Order ' . $orderdata->order_number . ' has been accepted by Admin';
-            $message_text = 'Your Order ' . $orderdata->order_number . ' has been accepted by Admin';
+            $body = 'A ' . $orderdata->order_number . ' számú rendelésének státusza.';
+            $message_text = $body;
         }
-        if ($request->statustype == "3") {
+        elseif ($request->statustype == "3") {
             $title = @helper::gettype($request->status, $request->statustype, $orderdata->order_type)->name;
-            $body = 'Your Order ' . $orderdata->order_number . ' is ready now.';
-            $message_text = 'Your Order ' . $orderdata->order_number . ' has been successfully delivered.';
+            // Ha elvitel: "elkészült", ha házhozszállítás: "kézbesítve" – alább a kézbesített verzió:
+            $body = 'A ' . $orderdata->order_number . ' számú rendelését sikeresen kézbesítettük.';
+            $message_text = $body;
         }
         if ($request->statustype == "4") {
             $title = @helper::gettype($request->status, $request->statustype, $orderdata->order_type)->name;
-            $body = 'Order ' . $orderdata->order_number . ' has been cancelled by Admin.';
-            $message_text = 'Order ' . $orderdata->order_number . ' has been cancelled by Admin.';
+            $body = 'Rendelés: ' . $orderdata->order_number . ' törölve az admin által.';
+            $message_text = 'Rendelés :' . $orderdata->order_number . ' törölve az admin által.';
         }
         if ($request->statustype == "4") {
             // order cancelled by admin
             $title = trans('labels.order_cancelled');
-            $body = 'Order ' . $orderdata->order_number . ' has been cancelled.';
-            $message_text = 'Order ' . $orderdata->order_number . ' has been cancelled.';
+            $body = 'Rendelés ' . $orderdata->order_number . 'Törölve az admin által.';
+            $message_text = 'Rendelés' . $orderdata->order_number . 'törölve az admin által.';
 
             if ($orderdata->user_id != null) {
                 if ($orderdata->transaction_type != 1) {
