@@ -40,7 +40,7 @@
                data-currency="<?php echo e($cardCur); ?>">
         <div class="payment-gateway mb-0 justify-content-between">
             <span>
-                <img src="<?php echo e(helper::image_path('card.png')); ?>" class="<?php echo e(session()->get('direction') == '2' ? 'ms-2' : 'me-2'); ?>" alt="">
+                <img src="<?php echo e(helper::image_path('khalti.png')); ?>" class="<?php echo e(session()->get('direction') == '2' ? 'ms-2' : 'me-2'); ?>" alt="">
                 Fizetés átvételkor (Kártya)
             </span>
             <span class="check-icon"></span>
@@ -56,7 +56,7 @@
             if (in_array($pt, [1, 15])) { continue; }
 
             // aktivált módszer-e?
-            $systemAddonActivated = in_array($pt, [2,3,4,5,6,7,8,9,10,11,12,13,14]);
+            $systemAddonActivated = in_array($pt, [2,3,4,5,6,7,8,9,10,11,12,13,14,16]);
             $addon = App\Models\SystemAddons::where('unique_identifier', $pmdata->unique_identifier)->first();
             if ($addon && $addon->activated == 1) { $systemAddonActivated = true; }
 
@@ -125,28 +125,76 @@
 </div>
 
 
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const TAG   = '|->KÁRTYÁVAL FIZET<-|';
         const notes = document.querySelector('#order_notes, textarea[name="order_notes"], input[name="order_notes"]');
         const radios = document.querySelectorAll('input[name="transaction_type"]');
 
-        function applyNote(el) {
-            if (!notes) return;
-            const uid = el.getAttribute('data-uid') || '';
-            const note = el.getAttribute('data-order_notes') || '';
+        if (!notes) return;
 
-            if (uid === 'cod_card' && note) {
-                notes.value = note;
-            } else if (uid === 'cod_cash') {
-                notes.value = '';
-            } else {
-                if (notes.value === 'Kártyával') notes.value = '';
+        // Kártya van-e kiválasztva? (igazítsd a feltételeket a saját markupodhoz)
+        function isCardSelected() {
+            const sel = document.querySelector('input[name="transaction_type"]:checked');
+            if (!sel) return false;
+            const uid = sel.getAttribute('data-uid') || '';
+            const val = sel.value;
+            // pl. 'cod_card' vagy value==2 (Bankkártya futárnál)
+            return uid === 'cod_card' || String(val) === '2';
+        }
+
+        // Csak akkor írjuk be a TAG-et, ha üres a mező
+        function ensureTagIfEmptyForCard() {
+            if (isCardSelected()) {
+                if (notes.value.trim() === '') {
+                    notes.value = TAG;
+                }
             }
         }
 
-        radios.forEach(r => r.addEventListener('change', function(){ applyNote(this); }));
-        const checked = document.querySelector('input[name="transaction_type"]:checked');
-        if (checked) applyNote(checked);
+        // Ha NEM kártya és a mezőben csak a TAG van, töröljük (ne maradjon ott feleslegesen)
+        function stripTagIfOnlyTag() {
+            const t = (notes.value || '').trim();
+            if (!isCardSelected() && (t === TAG)) {
+                notes.value = '';
+            }
+        }
+
+        // Fizetési mód váltásakor
+        radios.forEach(r => r.addEventListener('change', function () {
+            // sosem bántjuk a user saját szövegét
+            if (notes.value.trim() === '') {
+                ensureTagIfEmptyForCard(); // üresnél beírjuk, ha kártya
+            } else {
+                stripTagIfOnlyTag();       // ha nem kártya és csak TAG áll, töröljük
+            }
+        }));
+
+        // Submitkor is biztosítsuk
+        const form = document.querySelector('#checkout-form')
+            || document.querySelector('form.checkout-form')
+            || document.querySelector('form[action*="place-order"]')
+            || document.querySelector('form');
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                if (notes.value.trim() === '') {
+                    ensureTagIfEmptyForCard();
+                } else {
+                    stripTagIfOnlyTag();
+                }
+            });
+        }
+
+        // Első betöltéskor – ha kártya az alapértelmezett és üres a mező
+        if (notes.value.trim() === '') {
+            ensureTagIfEmptyForCard();
+        }
     });
 </script>
+
+
+
 <?php /**PATH C:\xampp\htdocs\gyros2\resources\views/web/paymentmethodsview.blade.php ENDPATH**/ ?>

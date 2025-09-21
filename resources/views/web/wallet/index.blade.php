@@ -41,14 +41,13 @@
                         <div class="border-bottom">
                             <ul class="mb-3">
                                 <li><i
+                                        class="fa-regular fa-circle-check mx-2 text-success"></i>Minden elköltött 1000 Ft után 50 pontot írunk jóvá.
+                                </li>
+                                <li><i
                                         class="fa-regular fa-circle-check mx-2 text-success"></i>{{ trans('labels.fast_payment') }}
                                 </li>
-                                <li><i
-                                        class="fa-regular fa-circle-check mx-2 text-success"></i>{{ trans('labels.secure_payment') }}
-                                </li>
-                                <li><i
-                                        class="fa-regular fa-circle-check mx-2 text-success"></i>{{ trans('labels.no_document_required') }}
-                                </li>
+
+
                                 <li><i
                                         class="fa-regular fa-circle-check mx-2 text-success"></i>{{ trans('labels.wallet_note') }}
                                 </li>

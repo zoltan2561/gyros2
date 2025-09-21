@@ -4,6 +4,9 @@
     <div class="container-fluid">
         @if (Auth::user()->type == 1 || in_array(0, explode(',',helper::get_roles())))
             {{-- @include('admin.plugin') --}}
+
+
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="row">
@@ -144,7 +147,7 @@
                                     @forelse ($user_years as $useryear)
                                         <option value="{{ $useryear->year }}" {{ date('Y') == $useryear->year ? 'selected' : '' }}>{{ $useryear->year }}</option>
                                     @empty
-                                        <option value="" selected disabled>{{ trans('labels.select') }}</option>    
+                                        <option value="" selected disabled>{{ trans('labels.select') }}</option>
                                     @endforelse
                                 </select>
                             </div>
@@ -167,7 +170,7 @@
                                     @forelse ($earnings_years as $earnings)
                                         <option value="{{ $earnings->year }}" {{ date('Y') == $earnings->year ? 'selected' : '' }}>{{ $earnings->year }}</option>
                                     @empty
-                                        <option value="" selected disabled>{{ trans('labels.select') }}</option>    
+                                        <option value="" selected disabled>{{ trans('labels.select') }}</option>
                                     @endforelse
                                 </select>
                             </div>
@@ -233,7 +236,7 @@
                                     @forelse ($order_years as $orderyear)
                                         <option value="{{ $orderyear->year }}" {{ date('Y') == $orderyear->year ? 'selected' : '' }}>{{ $orderyear->year }}</option>
                                     @empty
-                                        <option value="" selected disabled>{{ trans('labels.select') }}</option>    
+                                        <option value="" selected disabled>{{ trans('labels.select') }}</option>
                                     @endforelse
                                 </select>
                             </div>
@@ -259,7 +262,7 @@
         var labels = {{ Js::from($orderlabels) }};
         var deliverydata = {{ Js::from($deliverydata) }};
         var pickupdata = {{ Js::from($pickupdata) }};
-        
+
         var delivery_orders = {{ Js::from(trans('labels.delivery_orders')) }};
         var pickup_orders = {{ Js::from(trans('labels.pickup_orders')) }};
         createOrdersChart(labels, deliverydata, pickupdata);

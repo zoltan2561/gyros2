@@ -8,16 +8,22 @@
             <div class="breadcrumb-sec-content">
                 <nav class="text-dark breadcrumb-divider" aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li
-                            class="breadcrumb-item <?php echo e(session()->get('direction') == '2' ? 'breadcrumb-item-rtl ps-0' : ''); ?>">
+                        <li class="breadcrumb-item">
                             <a class="text-dark fw-600" href="<?php echo e(URL::to('/')); ?>"><?php echo e(trans('labels.home')); ?></a>
                         </li>
-                        <li
-                            class="breadcrumb-item <?php echo e(session()->get('direction') == '2' ? 'breadcrumb-item-rtl ps-0' : ''); ?> active">
-                            <?php echo e(trans('labels.categories')); ?>
+
+                        
+                        <li class="breadcrumb-item">
+                            <a class="text-dark fw-600" href="<?php echo e(url('categories')); ?>"><?php echo e(trans('labels.categories')); ?></a>
+                        </li>
+
+                        
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <?php echo e($currentCategory->category_name ?? \Illuminate\Support\Str::headline(str_replace('-', ' ', request('category')))); ?>
 
                         </li>
                     </ol>
+
                 </nav>
             </div>
         </div>

@@ -163,7 +163,11 @@ class CheckoutController extends Controller
     public function placeorder(Request $request)
     {
 
+
         try {
+
+
+
             // === Kötelező (csak kiszállításnál): CÍM + VÁROS ===========================
             if ((int)$request->input('order_type') === 1) {
 
@@ -700,4 +704,14 @@ class CheckoutController extends Controller
         if ($grandTotalFt <= 0) return 0;
         return (int) (floor($grandTotalFt / 1000) * 50);
     }
+
+
+    public function barionPing(Request $request)
+    {
+        return response()->json([
+            'ok'  => true,
+            'msg' => 'működik a hívás (Barion 16 teszt)'
+        ], 200);
+    }
+
 }

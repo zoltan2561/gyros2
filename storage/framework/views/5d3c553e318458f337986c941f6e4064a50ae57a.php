@@ -46,6 +46,34 @@
         }
     </style>
     <?php echo $__env->yieldContent('styles'); ?>
+
+
+    <!-- Barion Base Pixel -->
+    <script>
+        // Create BP element on the window
+        window["bp"] = window["bp"] || function () {
+            (window["bp"].q = window["bp"].q || []).push(arguments);
+        };
+        window["bp"].l = 1 * new Date();
+
+        // Insert a script tag on the top of the head to load bp.js
+        var scriptElement = document.createElement("script");
+        var firstScript = document.getElementsByTagName("script")[0];
+        scriptElement.async = true;
+        scriptElement.src = "https://pixel.barion.com/bp.js";
+        firstScript.parentNode.insertBefore(scriptElement, firstScript);
+
+        // Saját pixel ID
+        window["barion_pixel_id"] = "BPT-ENlCTnu71e-46"; //TODO:live-ra átirni majd
+
+        // Init esemény elküldése
+        bp("init", "addBarionPixelId", window["barion_pixel_id"]);
+    </script>
+
+    <noscript>
+        <img height="1" width="1" style="display:none" alt="Barion Pixel"
+             src="https://pixel.barion.com/a.gif?ba_pixel_id=BPT-ENlCTnu71e-46&ev=contentView&noscript=1">
+    </noscript>
 </head>
 
 <body>
@@ -167,7 +195,7 @@
         <?php echo $__env->make('web.quick_call', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
         <?php endif; ?>
     <?php endif; ?>
-    
+
 
     <!-- MODAL_working_hours--START -->
     <div class="modal" id="modal_working_hours" tabindex="-1" aria-labelledby="working_hours_Label"
@@ -241,7 +269,7 @@
                                 <span
                                     class="px-2"><?php echo e(trans('labels.continue_as_guest')); ?></span>
                             </a>
-                        
+
                         </div>
                     </div>
                 </div>
@@ -402,7 +430,7 @@
         var topdeals = "<?php echo e(!empty(@$topdealsproduct) ? 1 : 0); ?>";
         var time_zone = "<?php echo e(helper::appdata()->timezone); ?>";
         var current_date = "<?php echo e(\Carbon\Carbon::now()->toDateString()); ?>";
-        
+
         var siteurl = "<?php echo e(URL::to('/')); ?>";
     </script>
     <script src="<?php echo e(url(env('ASSETSPATHURL') . 'web-assets/js/custom/top_deals.js')); ?>"></script>
@@ -444,13 +472,13 @@
                     toggleLoadedClass();
 
                     setInterval(function()
-                    { 
+                    {
                         $.ajax({
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
                             url: "<?php echo e(URL::to('get_notification_data')); ?>",
-                            
+
                             method: 'POST',
                             success: function(response) {
                                 toggleLoadedClass();

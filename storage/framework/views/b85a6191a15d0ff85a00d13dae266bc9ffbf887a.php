@@ -492,7 +492,7 @@
 
     <!-- Store Reviews Section Start Here -->
     <?php if(@helper::checkaddons('store_review')): ?>
-        <?php if(count($storereviews) > 0): ?>
+        <?php if(count($storereviews) >= 0): ?>
             <section class="testimonial position-relative bg-section-gray sec-padding">
                 <div class="container">
                     <div class="row align-items-center justify-content-center ">
@@ -703,7 +703,7 @@
                         </div>
                     </div>
                     <div class="col-lg-6 col-12 d-md-block d-none">
-                        <img src="<?php echo e(helper::image_path(@helper::appdata()->faqs_image)); ?>"
+                        <img src="<?php echo e(url('storage/app/public/prof.jpg')); ?>"
                             class="w-100 object-fit-cover rounded-4" alt="">
                     </div>
                 </div>

@@ -39,8 +39,9 @@ use App\Http\Controllers\admin\LangController;
 use App\Http\Controllers\admin\ShippingareaController;
 use App\Http\Controllers\admin\TaxController;
 use App\Http\Controllers\Admin\WhyChooseUsController;
-
-
+use App\Http\Controllers\BarionController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -80,6 +81,19 @@ Route::get('forgot-password', function () {
 });
 
 
+//Barion
+Route::prefix('barion')->group(function () {
+    Route::post('/indit',  [BarionController::class,'start'])->name('barion.start');
+    Route::get('/utan',    [BarionController::class,'after'])->name('barion.after');
+    Route::match(['GET','POST'],'/callback', [BarionController::class,'callback'])->name('barion.callback');
+});
+
+
+
+
+
+
+
 
 Route::get('/language-{lang}', [LangController::class, 'change'])->name('language');
 Route::post('add-on/session/save', [AdminController::class, 'sessionsave']);
@@ -114,21 +128,27 @@ Route::group(['namespace' => 'front', 'middleware' => 'MaintenanceMiddleware'], 
     //subscribe
 	Route::post('/subscribe', [WebOtherPagesController::class, 'subscribe'])->name('subscribe');
 
-	Route::group(['middleware' => 'NoUserAuthMiddleware'], function () {
-		// auth
-		Route::get('/register', [WebUserController::class, 'register'])->name('register');
-		Route::post('/adduser', [WebUserController::class, 'create'])->name('adduser');
-		Route::get('/verification', [WebUserController::class, 'verification'])->name('verification');
-		Route::post('/verify-otp', [WebUserController::class, 'verifyotp'])->name('verifyotp');
-		Route::get('/resend-otp', [WebUserController::class, 'resendotp']);
-		//Route::get('/forgot-password', [WebUserController::class, 'forgotpassword'])->name('forgot-password');
-		//Route::post('/send-pass', [WebUserController::class, 'sendpass'])->name('sendpass');
-		Route::get('/login', [WebUserController::class, 'login'])->name('login');
-		Route::post('/checklogin', [WebUserController::class, 'checklogin']);
-	});
+    Route::group(['middleware' => 'NoUserAuthMiddleware'], function () {
+        // auth
+        Route::get('/register', [WebUserController::class, 'register'])->name('register');
+
+        // ide a rate limit → 3 próbálkozás / perc / IP
+        Route::post('/adduser', [WebUserController::class, 'create'])
+            ->middleware('throttle:3,1')
+            ->name('adduser');
+
+        Route::get('/verification', [WebUserController::class, 'verification'])->name('verification');
+        Route::post('/verify-otp', [WebUserController::class, 'verifyotp'])->name('verifyotp');
+        Route::get('/resend-otp', [WebUserController::class, 'resendotp']);
+        //Route::get('/forgot-password', [WebUserController::class, 'forgotpassword'])->name('forgot-password');
+        //Route::post('/send-pass', [WebUserController::class, 'sendpass'])->name('sendpass');
+        Route::get('/login', [WebUserController::class, 'login'])->name('login');
+        Route::post('/checklogin', [WebUserController::class, 'checklogin']);
+    });
 
 
-	// cart
+
+    // cart
 	Route::get('/cart', [CartController::class, 'index'])->name('cart');
 	Route::post('/cart/deleteitem', [CartController::class, 'deletecartitem']);
 	Route::post('/cart/qtyupdate', [CartController::class, 'qtyupdate']);

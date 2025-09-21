@@ -119,8 +119,12 @@
                                                             id="confirm_password" name="password_confirmation"
                                                             placeholder="{{ trans('labels.confirm_password') }}"
                                                             value="{{ old('password_confirmation') }}" required>
+                                                        <input type="text" name="website" style="display:none">
+                                                        <input type="hidden" name="form_started_at" value="{{ now()->timestamp }}">
+
                                                     </div>
                                                 </div>
+
                                             </div>
                                         @endif
                                     @endif
@@ -134,6 +138,8 @@
                                                 href="{{ URL::to('terms-conditions') }}"
                                                 class="text-primary text-decoration-none fw-medium">{{ trans('labels.terms_conditions') }}</a></label>
                                     </div>
+
+
                                     <div class="form-group mt-2">
                                         <button type="submit"
                                             class="btn btn-primary w-100">{{ trans('labels.signup') }}</button>

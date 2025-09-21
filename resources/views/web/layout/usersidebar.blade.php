@@ -106,12 +106,13 @@
                         </li>
                     @endif
 
-{{-- <li class="mb-3 {{ request()->is('wallet*') ? 'active' : '' }}">
+ <li class="mb-3 {{ request()->is('wallet*') ? 'active' : '' }}">
                         <a class="text-black" href="{{ route('user-wallet') }}">
                             <i
                                 class="fa-solid fa-wallet {{ session()->get('direction') == '2' ? 'ms-2' : 'me-2' }}"></i>{{ trans('labels.my_wallet') }}
                         </a>
                     </li>
+                    {{--
                     <li class="mb-3 {{ request()->is('refer-earn') ? 'active' : '' }}">
                         <a class="text-black" href="{{ route('refer-earn') }}">
                             <i

@@ -4,8 +4,46 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "db8cbb5ae4a7a4a21b28bb42016cb5aa",
+    "content-hash": "2f53a16ea373f52fd3f01b23b4fdd9a7",
     "packages": [
+        {
+            "name": "barion/barion-web-php",
+            "version": "v2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/barion/barion-web-php.git",
+                "reference": "2853a8792c84f824549898f6584ed6462a112676"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/barion/barion-web-php/zipball/2853a8792c84f824549898f6584ed6462a112676",
+                "reference": "2853a8792c84f824549898f6584ed6462a112676",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=8.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Barion\\": "library/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "PHP libary for Barion Smart Gateway API integration",
+            "support": {
+                "chat": "https://discord.gg/rPkeS5fW",
+                "docs": "https://docs.barion.com",
+                "email": "devsupport@barion.com",
+                "issues": "https://github.com/barion/barion-web-php/issues",
+                "source": "https://github.com/barion/barion-web-php/tree/v2.0.1"
+            },
+            "time": "2025-03-25T09:18:59+00:00"
+        },
         {
             "name": "barryvdh/laravel-dompdf",
             "version": "v2.2.0",
@@ -11482,12 +11520,12 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.0.2"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
 }

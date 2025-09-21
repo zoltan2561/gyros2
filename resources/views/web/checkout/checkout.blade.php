@@ -177,6 +177,9 @@
                                                 value="{{ Auth::user() && Auth::user()->type == 2 ? Auth::user()->mobile : old('mobile') }}"
                                                 required>
                                         </div>
+
+
+
                                     </div>
                                 </div>
                             </div>
@@ -232,6 +235,7 @@
 
                                     </div>
                                 </div>
+
                             </div>
 
 
@@ -254,11 +258,13 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                             <div class="payment-option mb-3 border">
                                 <div class="heading mb-2 border-bottom">
                                     <h2>{{ trans('labels.choose_payment') }}</h2>
                                 </div>
+
                                 <!-- payment-options -->
                                 @include('web.paymentmethodsview')
                                 <div class="row g-3 justify-content-between mt-4 align-items-center">
@@ -268,15 +274,46 @@
                                     </div>
                                     <div class="align-items-center col-sm-6 col-12">
                                         <button
+                                            id="place-order-btn"
                                             class="btn btn-primary w-100 d-flex gap-3 justify-content-center align-items-center checkout"
                                             onclick="isopenclose('{{ URL::to('/isopenclose') }}','{{ $total_item_qty }}','{{ $order_total }}')">
                                             {{ trans('labels.proceed_pay') }}
                                             <div class="loader d-none checkout_loader"></div>
                                         </button>
+
                                     </div>
                                 </div>
+
                             </div>
+
+                            <!-- ÁSZF CUCC -->
+
+
+
+                            <div class="form-group mt-3">
+                                <div class="form-check">
+                                    <input type="checkbox"
+                                           name="terms"
+                                           id="terms"
+                                           value="1"
+                                           class="form-check-input me-2">
+                                    <label for="terms" class="form-check-label fs-6 text-dark">
+                                        Elfogadom az
+                                        <a href="{{ url('/terms-conditions') }}" target="_blank"
+                                           class="text-primary text-decoration-none fw-medium">ÁSZF-et</a>
+                                        és az
+                                        <a href="{{ url('/terms-conditions') }}" target="_blank"
+                                           class="text-primary text-decoration-none fw-medium">Adatvédelmi Tájékoztatót</a>.
+                                    </label>
+                                </div>
+                            </div>
+
+
+
+
+                            <!-- ÁSZF CUCC -->
                         </div>
+
                         <div class="col-lg-4 order-md1">
                             @if (@helper::checkaddons('coupon'))
                                 <div class="promocode mb-4 py-3">
@@ -356,7 +393,7 @@
                                         <div class="row justify-content-between align-items-center">
                                             <div class="col-auto"><span>{{ $tax }}</span></div>
                                             <div class="col-auto">
-                                                <span> {{ helper::currency_format($rate) }}</sp>
+                                                <span> {{ helper::currency_format($rate) }}</span>
                                             </div>
                                         </div>
                                     @endforeach
@@ -467,6 +504,7 @@
                     <input type="submit" class="callpaypal" name="submit">
                 </form>
             </div>
+
         </section>
     @else
         @include('web.nodata')
@@ -547,6 +585,7 @@
                                 @enderror
                             </div>
                         </div>
+
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-danger"
@@ -584,6 +623,29 @@
             altFormat: dateFormat,
         });
     </script>
+
+
+    <style>
+        /* Mindig jól látható piros keret */
+        #terms.form-check-input {
+            width: 18px; height: 18px;
+            border: 2px solid #dc3545 !important; /* piros */
+        }
+        /* Pipálva piros háttér + keret */
+        #terms.form-check-input:checked {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+        }
+        /* Hibás állapotban plusz kiemelés */
+        #terms.form-check-input.is-invalid {
+            box-shadow: 0 0 0 .2rem rgba(220,53,69,.25) !important;
+        }
+        /* Jobb fókusz kontúr billentyűzetnél */
+        #terms.form-check-input:focus {
+            box-shadow: 0 0 0 .2rem rgba(220,53,69,.25) !important;
+            outline: none;
+        }
+    </style>
 
     <script>
         (function(){
@@ -638,6 +700,309 @@
                 syncCity();
             }
         })();
+    </script>
+
+
+
+
+    <script>
+        // GPT mókolása 2.2 – univerzális ÁSZF check/validációk
+        document.addEventListener('DOMContentLoaded', function () {
+            const btn    = document.querySelector('#place-order-btn');
+            const csrf   = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+            const loader = document.querySelector('.checkout_loader');
+            if (!btn) return;
+
+            // ---- UI értesítők (toastr -> Swal -> Bootstrap alert) ----
+            const ui = (() => {
+                const host = document.querySelector('.payment-option') || document.querySelector('.cart-view') || document.body;
+                function makeAlert(kind, msg) {
+                    let box = document.getElementById('checkout-inline-alert');
+                    if (!box) {
+                        box = document.createElement('div');
+                        box.id = 'checkout-inline-alert';
+                        box.style.transition = 'opacity .25s ease, transform .25s ease';
+                        box.style.opacity = '0';
+                        box.style.transform = 'translateY(-6px)';
+                        host.prepend(box);
+                    }
+                    box.className = `alert alert-${kind} alert-dismissible fade show mt-2`;
+                    box.innerHTML = `
+                <span>${msg}</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+                    requestAnimationFrame(() => {
+                        box.style.opacity = '1';
+                        box.style.transform = 'translateY(0)';
+                    });
+                    clearTimeout(box._t);
+                    box._t = setTimeout(() => {
+                        try {
+                            box.classList.remove('show');
+                            box.style.opacity = '0';
+                            box.style.transform = 'translateY(-6px)';
+                            setTimeout(() => box.remove(), 250);
+                        } catch(_) {}
+                    }, 4000);
+                }
+                function error(msg)   { if (window.toastr){ toastr.clear(); return toastr.error(msg); }
+                    if (window.Swal){ return Swal.fire({toast:true,position:'top-end',timer:3500,showConfirmButton:false,icon:'error',title: msg}); }
+                    makeAlert('danger', msg); }
+                function info(msg)    { if (window.toastr){ toastr.clear(); return toastr.info(msg); }
+                    if (window.Swal){ return Swal.fire({toast:true,position:'top-end',timer:2500,showConfirmButton:false,icon:'info',title: msg}); }
+                    makeAlert('info', msg); }
+                function success(msg) { if (window.toastr){ toastr.clear(); return toastr.success(msg); }
+                    if (window.Swal){ return Swal.fire({toast:true,position:'top-end',timer:2500,showConfirmButton:false,icon:'success',title: msg}); }
+                    makeAlert('success', msg); }
+                return { error, info, success };
+            })();
+
+            // --- mentsük az eredeti inline onclick-et, majd vegyük le, hogy ne fusson el magától ---
+            const originalOnClick = btn.getAttribute('onclick') || '';
+            btn.removeAttribute('onclick');
+
+            // isopenclose('URL','QTY','AMOUNT') → paraméterek kinyerése
+            function parseArgs(str){
+                const m = String(str).match(/isopenclose\(\s*'([^']+)'\s*,\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/);
+                return m ? { url:m[1], qty:m[2], amount:m[3] } : null;
+            }
+            const args = parseArgs(originalOnClick);
+
+            const el  = id => document.getElementById(id);
+            const val = id => document.querySelector('input#'+id)?.value ?? el(id)?.value ?? '';
+
+            function selectedPaymentType(){
+                const r = document.querySelector('input[name="transaction_type"]:checked')
+                    ||  document.querySelector('input[name="payment_type"]:checked')
+                    ||  document.querySelector('input[type="radio"][value="16"]:checked');
+                return r ? parseInt(r.value, 10) : null;
+            }
+            function showLoader(on){ if (loader) loader.classList.toggle('d-none', !on); }
+
+            // ======= HELPERek a placeorder logika tükrözéséhez =======
+            function toFloat(any){
+                if (any == null) return 0.0;
+                if (typeof any === 'number') return any;
+                const s0 = String(any);
+                let s = s0.replace(/[^\d.,]/g, '');
+                if (!s) return 0.0;
+                if (s.includes(',') && !s.includes('.')) s = s.replace(',', '.');
+                else s = s.replace(/,/g, '');
+                const n = parseFloat(s);
+                return isNaN(n) ? 0.0 : n;
+            }
+
+            // ✅ UNIVERZÁLIS: ÁSZF kötelező minden típushoz
+            function validateTerms(){
+                const cb = document.getElementById('terms');
+                if (!cb) return true; // ha valamiért nincs checkbox, ne blokkoljunk
+                if (!cb.checked){
+                    cb.classList.add('is-invalid');
+                    if (window.toastr) { toastr.clear(); toastr.error('Az ÁSZF és az Adatvédelmi Tájékoztató elfogadása kötelező.'); }
+                    else if (window.Swal) { Swal.fire({toast:true,position:'top-end',timer:3500,showConfirmButton:false,icon:'error',
+                        title:'Az ÁSZF és az Adatvédelmi Tájékoztató elfogadása kötelező.'}); }
+                    else { ui.error('Az ÁSZF és az Adatvédelmi Tájékoztató elfogadása kötelező.'); }
+                    cb.focus();
+                    return false;
+                }
+                cb.classList.remove('is-invalid');
+                return true;
+            }
+
+            // kötelező mezők (Barionhoz – 16)
+            function validateRequiredFor16(){
+                const first  = el('first_name')?.value?.trim() || '';
+                const last   = el('last_name')?.value?.trim()  || '';
+                const email  = el('email')?.value?.trim()      || '';
+                const mobile = el('mobile')?.value?.trim()     || '';
+                if (!first){ ui.error(el('first_name_message')?.value || 'Keresztnév kötelező'); el('first_name')?.focus(); return false; }
+                if (!last){  ui.error(el('last_name_message')?.value  || 'Vezetéknév kötelező'); el('last_name')?.focus();  return false; }
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+                    ui.error(el('email_message')?.value || 'Érvénytelen e-mail'); el('email')?.focus(); return false;
+                }
+                if (!mobile){ ui.error(el('mobile_message')?.value || 'Telefon kötelező'); el('mobile')?.focus(); return false; }
+
+                const orderType = (el('order_type')?.value || '1');
+                if (orderType === '1'){ // kiszállítás
+                    const address = el('new_address')?.value?.trim() || '';
+                    const city    = el('new_city')?.value?.trim()    || '';
+                    const areaSel = el('delivery_area');
+
+                    if (!address || !/\d/.test(address)){
+                        ui.error(el('new_address_message')?.value || 'Cím (házszámmal) kötelező');
+                        el('new_address')?.focus();
+                        return false;
+                    }
+                    if (!city){
+                        ui.error(el('new_city_message')?.value || 'Város kötelező');
+                        el('new_city')?.focus();
+                        return false;
+                    }
+                    if (areaSel && !areaSel.value){
+                        ui.error(el('shipping_area_message')?.value || 'Válaszd ki a szállítási területet');
+                        areaSel.focus();
+                        return false;
+                    }
+
+                    const dateEl = document.querySelector('.delivery_pickup_date');
+                    const timeEl = el('deliverytime');
+                    if (dateEl && !dateEl.value){
+                        ui.error(el('delivery_date_message')?.value || 'Szállítási dátum kötelező');
+                        dateEl.focus();
+                        return false;
+                    }
+                    if (timeEl && !timeEl.value){
+                        ui.error(el('delivery_time_message')?.value || 'Idősáv kötelező');
+                        timeEl.focus();
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // Minimum összeg (Barionhoz – 16)
+            function validateMinTotalFor16(){
+                const orderType = (el('order_type')?.value || '1');
+                if (orderType !== '1') return true; // csak kiszállításnál
+
+                const grand_total     = val('grand_total');
+                const delivery_charge = val('delivery_charge');
+                const dc = Math.round(toFloat(delivery_charge));
+                const gt = Math.max(0, Math.round(toFloat(grand_total)) - dc);
+
+                const minRequired = (dc <= 1100) ? 2500 : ((dc <= 1900) ? 4900 : 5900);
+
+                if (gt < minRequired){
+                    const missing = minRequired - gt;
+                    ui.error('Nincs meg a minimum rendelési összeg: ' + minRequired + ' Ft. '
+                        + 'Jelenlegi (végösszeg): ' + gt + ' Ft. Hiányzik: ' + missing + ' Ft.');
+                    return false;
+                }
+                return true;
+            }
+
+            async function callIsOpenClose(url, qty, amount, buynow){
+                const body = new URLSearchParams();
+                body.set('qty',          qty ?? '');
+                body.set('order_amount', amount ?? '');
+                body.set('buynow',       buynow ?? '0');
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrf
+                    },
+                    body: body.toString()
+                });
+                if (!res.ok) throw new Error('isopenclose HTTP ' + res.status);
+                return await res.json(); // {status, message}
+            }
+
+            async function startBarion(){
+                const payload = {
+                    grand_total:     val('grand_total'),
+                    tax:             val('tax'),
+                    tax_name:        val('tax_name'),
+                    order_type:      el('order_type')?.value ?? '',
+                    delivery_charge: val('delivery_charge'),
+                    buynow:          val('buynow'),
+
+                    email:      el('email')?.value ?? '',
+                    mobile:     el('mobile')?.value ?? '',
+                    first_name: el('first_name')?.value ?? '',
+                    last_name:  el('last_name')?.value ?? '',
+
+                    address:       el('new_address')?.value ?? '',
+                    city:          el('new_city')?.value ?? '',
+                    landmark:      el('landmark')?.value ?? '',
+                    pincode:       el('pincode')?.value ?? '',
+                    country:       el('country')?.value ?? '',
+                    state:         el('state')?.value ?? '',
+                    order_notes:   el('order_notes')?.value ?? '',
+                    delivery_date: document.querySelector('.delivery_pickup_date')?.value ?? '',
+                    delivery_time: el('deliverytime')?.value ?? ''
+                };
+
+                const res = await fetch('{{ route('barion.start') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrf
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok){
+                    const t = await res.text();
+                    throw new Error('Barion indítás hiba (HTTP '+res.status+'): '+t);
+                }
+                const data = await res.json();
+                if (data?.ok && data?.redirect){
+                    window.location.href = data.redirect; // → Barion
+                    return;
+                }
+                throw new Error(data?.msg || 'Barion indítás sikertelen');
+            }
+
+            // FŐ GOMB – MINDEN FIZETÉSI TÍPUS ELŐTT ÁSZF ELLENŐRZÉS
+            btn.addEventListener('click', async function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+                // ⬅ KÖTELEZŐ ÁSZF minden ágon
+                if (!validateTerms()) return;
+
+                const type = selectedPaymentType();
+
+                // Nem Barion (≠16) → a régi flow-hoz vissza (de már ÁSZF ellenőrizve van)
+                if (type !== 16){
+                    if (args && typeof window.isopenclose === 'function'){
+                        return window.isopenclose(args.url, args.qty, args.amount);
+                    }
+                    return false;
+                }
+
+                // Barion (16) – plusz validációk
+                if (!validateRequiredFor16()) return;
+                if (!validateMinTotalFor16()) return;
+
+                if (!args){
+                    ui.error('Hiányzó isopenclose paraméterek.');
+                    return;
+                }
+
+                try{
+                    showLoader(true);
+
+                    // Nyitvatartás + min/max check a meglévő endpointon
+                    const buynow = val('buynow') || '0';
+                    const chk = await callIsOpenClose(args.url, args.qty, args.amount, buynow);
+
+                    // 0/2 = hiba, 4 = login kell, 1/3 = OK
+                    const st = Number(chk?.status ?? 0);
+                    if (st === 4){
+                        ui.error('{{ trans('messages.login_required') }}');
+                        return;
+                    }
+                    if (st === 0 || st === 2){
+                        ui.error(chk?.message || '{{ trans('messages.wrong') }}');
+                        return;
+                    }
+
+                    // minden zöld → Barion
+                    await startBarion();
+
+                } catch(err){
+                    console.error(err);
+                    ui.error(err?.message || 'Hiba történt.');
+                } finally {
+                    showLoader(false);
+                }
+            }, true);
+        });
     </script>
 
 

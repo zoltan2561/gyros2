@@ -55,7 +55,7 @@
                                 </div>
                                 <div class="m-3">
                                     <input type="text" name="otp" class="form-control rounded"
-                                        placeholder="{{ trans('labels.otp') }}" required
+                                        placeholder="KÓD" required
                                         @if (env('Environment') == 'sendbox') value="{{ session()->get('verification_otp') }}" readonly @else value="{{ old('otp') }}" @endif>
                                 </div>
                                 <div class="m-3 d-grid">

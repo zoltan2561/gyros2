@@ -191,14 +191,33 @@ class AdminController extends Controller
     }
     public function changestatus(Request $request)
     {
-        if(@helper::appdata()->timezone != ""){
+        if (@helper::appdata()->timezone != "") {
             date_default_timezone_set(helper::appdata()->timezone);
         }
-        $status = User::find(Auth::user()->id);
-        $status->is_online = $status->is_online == 1 ? 2 : 1;
-        $status->save();
-        return redirect()->back()->with('success',trans('messages.success'));
+
+        $actor = auth()->user();
+        if (!in_array((int)$actor->type, [1, 4])) {
+            abort(403, 'Nincs jogosultság.');
+        }
+
+        // Jövőből várunk explicit státuszt (1=ON, 2=OFF); ha nincs, toggle
+        $current = (int) \App\Models\User::where('type', 1)->value('is_online') ?: 1;
+        $req     = $request->input('status'); // lehet GET vagy POST
+        $new     = in_array((int)$req, [1, 2]) ? (int)$req : ($current === 1 ? 2 : 1);
+
+        // SZINKRON: főadmin + ÖSSZES pultos
+        \App\Models\User::whereIn('type', [1, 4])->update(['is_online' => $new]);
+
+
+        // \Cache::forget('restaurant_open');
+
+        if ($request->wantsJson()) {
+            return response()->json(['ok' => true, 'is_online' => $new]);
+        }
+        return back()->with('success', trans('messages.success'));
     }
+
+
 
     public function editprofile(request $request)
     {

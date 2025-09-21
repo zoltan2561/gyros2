@@ -67,11 +67,11 @@ class UserController extends Controller
             }
         } else {
             $email      = $request->email;
-            $password   = Hash::make($request->password);
+            $password   = \Hash::make($request->password);
             $login_type = "email";
         }
 
-        // Referral és egyediség ellenőrzések maradnak
+        // Referral és egyediség ellenőrzés
         $checkreferral = User::select('id','name','referral_code','wallet','email','token')
             ->where('referral_code', $request->referral_code)
             ->where('is_available', 1)->where('is_deleted', 2)->first();
@@ -80,94 +80,66 @@ class UserController extends Controller
             return redirect()->back()->with('error', trans('messages.invalid_referral_code'));
         }
 
-        $checkmobile = User::where('mobile', $request->mobile)->where('is_available',1)->where('is_deleted',2)->first();
-        if (!empty($checkmobile)) {
+        if (User::where('mobile',$request->mobile)->where('is_available',1)->where('is_deleted',2)->exists()) {
             return redirect()->back()->with('error', trans('messages.mobile_exist'));
         }
-
-        $checkemail = User::where('email', $request->email)->where('is_available',1)->where('is_deleted',2)->first();
-        if (!empty($checkemail)) {
+        if (User::where('email',$request->email)->where('is_available',1)->where('is_deleted',2)->exists()) {
             return redirect()->back()->with('error', trans('messages.email_exist'));
         }
 
-        // ⚡️ KIKAPCSOLJUK az OTP/E-MAIL KÜLDÉST:
-        // Nem hívunk sms_helper::verificationsms / helper::verificationemail függvényeket.
-        // Úgy tekintjük, hogy a "verifikáció" sikeres.
-        $otp = null;
-
-        // User létrehozása azonnali "verified" állapottal
+        // 1) User létrehozása PENDING állapotban (is_verified = 2)
         $user = new User;
         $user->name          = $request->name;
         $user->mobile        = $request->mobile;
         $user->email         = $email;
         $user->profile_image = 'unknown.png';
-        $user->password      = $password;    // social login esetén üres maradhat, ahogy eddig is
+        $user->password      = $password;     // social login esetén maradhat üres
         $user->login_type    = $login_type;
         $user->google_id     = $google_id;
         $user->facebook_id   = $facebook_id;
         $user->referral_code = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz'), 0, 10);
-        $user->otp           = $otp;
+        $user->otp           = null;
         $user->type          = 2;
         $user->is_available  = 1;
+        $user->is_verified   = 2;             // <-- fontos: függőben
 
-        // ha van referral kód, töltsük az ideiglenes mezőket
         if ($request->filled('referral_code') && !empty($checkreferral)) {
             $user->user_id         = $checkreferral->id;
             $user->referral_amount = helper::appdata()->referral_amount;
         }
 
-        // ⬅️ FONTOS: tekintsük megerősítettnek
-        $user->is_verified      = 1;
-        if (Schema::hasColumn('users','email_verified_at')) {
-            $user->email_verified_at = now();
-        }
-
+        // NEM állítunk email_verified_at-et itt
         $user->save();
         session()->forget('social_login');
 
-        // Referral jóváírás (megtartjuk az eddigi logikát)
-        if ($request->filled('referral_code') && !empty($checkreferral)) {
-            $checkuser = User::where('email', $checkreferral->email)->first();
+        // 2) OTP generálás + küldés (SMS addon esetén SMS, különben e-mail)
+        $otp = rand(100000, 999999);
 
-            // ---- ajánló ----
-            $checkreferraluser = User::find($checkuser->id);
-            $checkreferraluser->wallet += helper::appdata()->referral_amount;
-            $checkreferraluser->update();
+// mail konfig frissítése (nálatok így szokás)
+        $emaildata = helper::emailconfigration();
+        \Config::set('mail', $emaildata);
 
-            $referral_tr = new Transaction;
-            $referral_tr->user_id          = $checkreferraluser->id;
-            $referral_tr->amount           = helper::appdata()->referral_amount;
-            $referral_tr->transaction_type = 11;
-            $referral_tr->username         = $checkuser->name;
-            $referral_tr->save();
-
-            // ---- új user ----
-            $checkusernew = User::where('email', $email)->first();
-            $checkusernew->wallet           = helper::appdata()->referral_amount;
-            $checkusernew->user_id          = "";
-            $checkusernew->referral_amount  = 0;
-            $checkusernew->update();
-
-            $new_user_tr = new Transaction;
-            $new_user_tr->user_id          = $checkusernew->id;
-            $new_user_tr->amount           = helper::appdata()->referral_amount;
-            $new_user_tr->transaction_type = 11;
-            $new_user_tr->username         = $checkreferraluser->name;
-            $new_user_tr->save();
-
-            $title = trans('labels.referral_earning');
-            $body  = 'Your friend "' . $checkuser->name . '" has used your referral code to register with Our Restaurant. You have earned "' . helper::currency_format(helper::appdata()->referral_amount) . '" referral amount in your wallet.';
-            helper::push_notification($checkreferraluser->token, $title, $body, "wallet", "");
-
-            $referralmessage = 'Your friend "' . $checkuser->name . '" has used your referral code to register with Restaurant User. You have earned "' . helper::appdata()->currency . '' . number_format(helper::appdata()->referral_amount, 2) . '" referral amount in your wallet.';
-            helper::referral($checkreferraluser->email, $checkuser->name, $checkreferraluser->name, $referralmessage);
+// KÜLDÉS
+        $sent = helper::verificationemail($user->email, $otp);
+        if ($sent != 1) {
+            return redirect()->back()->with('error', trans('messages.email_error'));
         }
 
-        // 🔐 Azonnali beléptetés és irány a főoldal
-        Auth::login($user);
+// OTP mentése a userhez + session beállítás a verify oldalnak
+        $user->otp = $otp;
+        $user->is_verified = 2; // függőben
+        $user->save();
 
-        return redirect()->route('home')->with('success', trans('messages.success'));
+        session()->put('verification_email', $user->email);
+        if (env('Environment') == 'sendbox') {
+            session()->put('verification_otp', $otp);
+        }
+
+// irány az OTP ellenőrző oldal
+        return redirect()->route('verification')->with('success', trans('messages.email_sent'));
+
     }
+
 
     public function verification(Request $request)
     {

@@ -97,20 +97,53 @@
                                         <div class="footer-box">
                                             <a class="text-white " href="<?php echo e($sociallink->link); ?>" target="_blank">
                                                 <?php echo $sociallink->icon; ?> </a>
+
                                         </div>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </div>
                             </div>
                         </div>
+                        <img src="<?php echo e(asset('barion.png')); ?>"
+                             alt="Barion"
+                             style="height:40px; margin-top:10px; max-width:100%;"
+                             class="d-block d-sm-inline"
+                        >
                     </div>
                 </div>
             </div>
         </div>
-   <div class="container" style="max-width: 800px;">
-        <div class="d-flex flex-column align-items-center text-center py-4">
-            <p class="text-white fs-6 mb-0"><?php echo e(helper::appdata()->copyright); ?></p>
+        <div class="container" style="max-width: 800px;">
+            <div class="d-flex flex-column align-items-center text-center py-4">
+                <a href="https://pzoli.com" target="_blank" class="matrix-text fs-6 mb-0 text-decoration-none">
+                    <?php echo e(helper::appdata()->copyright); ?>
+
+                </a>
+            </div>
         </div>
-    </div>
+
+        <style>
+            .matrix-text {
+                color: #00ff66; /* Matrix-zöld */
+                font-family: 'Courier New', monospace;
+                text-shadow: 0 0 5px #00ff66;
+                animation: blink 3s infinite; /* lassabb */
+                transition: color 0.3s ease-in-out;
+            }
+
+            @keyframes blink {
+                0%, 90% { opacity: 1; }
+                95%     { opacity: 0.6; }
+                100%    { opacity: 1; }
+            }
+
+            .matrix-text:hover {
+                color: #ffffff; /* hover-re váltson fehérre */
+                text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
+            }
+        </style>
+
+
+
 </footer>
 <!-- Footer End here -->
 <?php /**PATH C:\xampp\htdocs\gyros2\resources\views/web/layout/footer.blade.php ENDPATH**/ ?>

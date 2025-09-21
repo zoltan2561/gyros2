@@ -149,16 +149,46 @@ class helper
     }
     public static function verificationemail($email, $otp)
     {
-        $data = ['title' => trans('messages.email_code'), 'email' => $email, 'otp' => $otp, 'logo' => helper::image_path(@helper::appdata()->logo)];
+        // magyar fordítások
+        \App::setLocale(config('app.locale', 'hu'));
+        \Carbon\Carbon::setLocale(config('app.locale', 'hu'));
+
+        // teljes URL a logóhoz (sok kliens utálja a relatív/asset-only linket)
+        $logoUrl = url(\helper::image_path(@helper::appdata()->logo));
+
+        $data = [
+            'title' => trans('messages.email_code'),
+            'email' => $email,
+            'otp'   => $otp,
+            'logo'  => $logoUrl,
+        ];
+
         try {
-            Mail::send('email.emailverification', $data, function ($message) use ($data) {
+            // from név/cím a mail konfigból (vagy fallback)
+            $fromAddress = data_get(config('mail'), 'from.address', env('MAIL_FROM_ADDRESS'));
+            $fromName    = data_get(config('mail'), 'from.name',    env('MAIL_FROM_NAME', config('app.name', 'Gyros City')));
+
+            \Illuminate\Support\Facades\Mail::send('email.emailverification', $data, function ($message) use ($data, $fromAddress, $fromName) {
+                if ($fromAddress) {
+                    $message->from($fromAddress, $fromName);
+                    $message->replyTo($fromAddress, $fromName);
+                }
                 $message->to($data['email'])->subject($data['title']);
             });
+
+            // Symfony Mailer alatt nincs Mail::failures(), ezért try/catch elég
             return 1;
+
         } catch (\Throwable $th) {
+            // fontos: lásd, mi a hiba (DNS/SPF/DKIM, auth, timeouts, stb.)
+            \Log::error('verificationemail send failed: '.$th->getMessage(), [
+                'email' => $email,
+            ]);
             return 0;
         }
     }
+
+
     public static function send_pass($email, $name = null, $password = null)
     {
         try {
@@ -333,20 +363,10 @@ class helper
     }
     public static function emailconfigration()
     {
-        $mailsettings = Settings::first();
-        if ($mailsettings) {
-            $emaildata = [
-                'driver' => $mailsettings->mail_driver,
-                'host' => $mailsettings->mail_host,
-                'port' => $mailsettings->mail_port,
-                'encryption' => $mailsettings->mail_encryption,
-                'username' => $mailsettings->mail_username,
-                'password' => $mailsettings->mail_password,
-                'from'     => ['address' => $mailsettings->mail_fromaddress, 'name' => $mailsettings->mail_fromname]
-            ];
-        }
-        return $emaildata;
+        return config('mail');
     }
+
+
 
 
     // front

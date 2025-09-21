@@ -8,7 +8,7 @@ use App\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Http\Request;
 class RegisterController extends Controller
 {
     /*
@@ -42,7 +42,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * Get a validator for an incoming registration request.
+     * Bot védelem fejes ötlete
      *
      * @param  array  $data
      * @return \Illuminate\Contracts\Validation\Validator
@@ -50,9 +50,25 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+
+            // GDPR checkbox
+            'gdpr' => ['accepted'],
+
+            // Honeypot mező (hidden input a formban: <input type="text" name="website">)
+            'website' => ['prohibited'],
+
+            // Időzár (hidden input: <input type="hidden" name="form_started_at" value="{{ now()->timestamp }}">)
+            'form_started_at' => [
+                'required','integer',
+                function ($attribute, $value, $fail) {
+                    if (time() - (int)$value < 3) {
+                        $fail('Túl gyorsan küldted be az űrlapot.');
+                    }
+                }
+            ],
         ]);
     }
 
@@ -70,4 +86,15 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
     }
+
+    protected function registered(Request $request, $user)
+    {
+        // Ha még nincs megerősítve, küldjük a notice oldalra
+        if (!$user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+        // Ha már megerősített (ritka azonnal), mehet az eredeti redirect
+        return redirect($this->redirectTo);
+    }
+
 }

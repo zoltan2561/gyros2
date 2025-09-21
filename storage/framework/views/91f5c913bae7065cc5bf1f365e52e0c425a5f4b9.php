@@ -108,7 +108,14 @@
                         </li>
                     <?php endif; ?>
 
+ <li class="mb-3 <?php echo e(request()->is('wallet*') ? 'active' : ''); ?>">
+                        <a class="text-black" href="<?php echo e(route('user-wallet')); ?>">
+                            <i
+                                class="fa-solid fa-wallet <?php echo e(session()->get('direction') == '2' ? 'ms-2' : 'me-2'); ?>"></i><?php echo e(trans('labels.my_wallet')); ?>
 
+                        </a>
+                    </li>
+                    
                     <li class="mb-3">
                         <a href="javascript:void(0)" class="text-black"
                             onclick="logout('<?php echo e(route('logout')); ?>','<?php echo e(trans('messages.are_you_sure_logout')); ?>','<?php echo e(trans('labels.logout')); ?>')">
