@@ -110,35 +110,31 @@
                     </div>
                 </div>
             </div>
-        </div>
         <div class="container" style="max-width: 800px;">
-            <div class="d-flex flex-column align-items-center text-center py-4">
-                <a href="https://pzoli.com" target="_blank" class="matrix-text fs-6 mb-0 text-decoration-none">
-                    {{ helper::appdata()->copyright }}
-                </a>
-            </div>
-        </div>
+    <div class="d-flex flex-column align-items-center text-center py-1">
+        <a href="https://pzoli.com" target="_blank" class="matrix-text fs-6 mb-0 text-decoration-none">
+            © <script>document.write(new Date().getFullYear())</script> BY: pZoli.com
+        </a>
+    </div>
+</div>
 
-        <style>
-            .matrix-text {
-                color: #00ff66; /* Matrix-zöld */
-                font-family: 'Courier New', monospace;
-                text-shadow: 0 0 5px #00ff66;
-                animation: blink 3s infinite; /* lassabb */
-                transition: color 0.3s ease-in-out;
-            }
+<style>
+.matrix-text {
+    color: #00ff66; /* Matrix-zöld */
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 5px #00ff66;
+    transition: color 0.3s ease-in-out;
+    padding: 2px 6px;          
+    background: #000;          /* fekete háttér csak a szöveg mögött */
+}
 
-            @keyframes blink {
-                0%, 90% { opacity: 1; }
-                95%     { opacity: 0.6; }
-                100%    { opacity: 1; }
-            }
+.matrix-text:hover {
+    color: #ffffff;
+    text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
+}
+</style>
 
-            .matrix-text:hover {
-                color: #ffffff; /* hover-re váltson fehérre */
-                text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
-            }
-        </style>
+
 
 
 
