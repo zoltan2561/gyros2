@@ -64,7 +64,7 @@
         firstScript.parentNode.insertBefore(scriptElement, firstScript);
 
         // Saját pixel ID
-        window["barion_pixel_id"] = "BPT-ENlCTnu71e-46"; //TODO:live-ra átirni majd
+        window["barion_pixel_id"] = "BP-7g3J8gpcyb-68"; //live
 
         // Init esemény elküldése
         bp("init", "addBarionPixelId", window["barion_pixel_id"]);
@@ -72,7 +72,7 @@
 
     <noscript>
         <img height="1" width="1" style="display:none" alt="Barion Pixel"
-             src="https://pixel.barion.com/a.gif?ba_pixel_id=BPT-ENlCTnu71e-46&ev=contentView&noscript=1">
+             src="https://pixel.barion.com/a.gif?ba_pixel_id=BP-7g3J8gpcyb-68&ev=contentView&noscript=1">
     </noscript>
 </head>
 
