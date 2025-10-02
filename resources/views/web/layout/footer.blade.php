@@ -51,6 +51,11 @@
                                             class="text-white">{{ trans('labels.refund_policy') }}</a></li>
                                     <li><a href="{{ route('terms-conditions') }}"
                                             class="text-white">{{ trans('labels.terms_condition') }}</a></li>
+                                    <li>
+                                        <a href="alergens.html" class="text-white">
+                                            Allergén táblázat
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="col-md-4 col-lg-4 col-xl-4 col-6 mb-4 mb-sm-0">
@@ -124,7 +129,7 @@
     font-family: 'Courier New', monospace;
     text-shadow: 0 0 5px #00ff66;
     transition: color 0.3s ease-in-out;
-    padding: 2px 6px;          
+    padding: 2px 6px;
     background: #000;          /* fekete háttér csak a szöveg mögött */
 }
 

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allergén táblázat - Gyros City</title>
+    <link rel="icon" href="assets/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #111;
+            color: #eee;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #d4a017;
+            color: #111;
+            text-align: center;
+            padding: 1.2rem 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+        }
+        main {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px 40px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+        }
+        h2 {
+            color: #f5c542;
+            border-bottom: 2px solid #f5c542;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        ol {
+            counter-reset: allergen;
+            padding-left: 0;
+            list-style: none;
+        }
+        ol li {
+            counter-increment: allergen;
+            background: #222;
+            margin: 10px 0;
+            padding: 15px 20px;
+            border-left: 4px solid #f5c542;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        ol li::before {
+            content: counter(allergen) ". ";
+            font-weight: bold;
+            color: #f5c542;
+        }
+        ol li:hover {
+            background: #2a2a2a;
+            transform: translateX(4px);
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        a {
+            color: #f5c542;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>🥙 Gyros City – Allergén Táblázat</header>
+    <main>
+        <h2>14 Fő Allergén</h2>
+        <ol>
+            <li>Glutént tartalmazó gabonák és azokból készült termékek (búza, rozs, árpa, zab, tönköly, kamut-búza vagy ezek hibrid változatai)</li>
+            <li>Rákfélék és azokból készült termékek (pl. garnéla, kagyló)</li>
+            <li>Tojás és abból készült termékek</li>
+            <li>Halak és azokból készült termékek</li>
+            <li>Földimogyoró és abból készült termékek</li>
+            <li>Szójabab és abból készült termékek</li>
+            <li>Tej és abból készült termékek (beleértve a laktózt is)</li>
+            <li>Diófélék (mandula, mogyoró, dió, kesudió, pekándió, brazil dió, pisztácia, makadámia)</li>
+            <li>Zeller és abból készült termékek</li>
+            <li>Mustár és abból készült termékek</li>
+            <li>Szezámmag és abból készült termékek</li>
+            <li>Kén-dioxid és SO₂-ben kifejezett szulfitok 10 mg/kg vagy 10 mg/l feletti koncentrációban</li>
+            <li>Csillagfürt és abból készült termékek (farkasbabliszt / lupinliszt)</li>
+            <li>Puhatestűek és azokból készült termékek</li>
+        </ol>
+    </main>
+    <footer>
+        <p><a href="/gyros2">← Vissza a főoldalra</a></p>
+        <p>© 2025 Gyros City | Blau-Silver Kft.</p>
+    </footer>
+</body>
+</html>

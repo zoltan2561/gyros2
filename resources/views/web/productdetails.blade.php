@@ -394,11 +394,50 @@
                     <ul class="nav nav-pills py-3 mb-4 border-bottom border-top" id="pills-tab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link {{ session()->get('direction') == 2 ? 'ms-2 ms-md-3' : 'me-2 me-md-3' }} active"
-                                aria-current="page" data-bs-toggle="pill" data-bs-target="#pills-description"
-                                href="javascript:void(0)" aria-selected="true"
-                                role="tab">{{ trans('labels.description') }}</a>
+                               aria-current="page" data-bs-toggle="pill" data-bs-target="#pills-description"
+                               href="javascript:void(0)" aria-selected="true" role="tab">
+                                {{ trans('labels.description') }}
+                            </a>
                         </li>
-                        @if (@helper::checkaddons('product_review'))
+                        {{-- ide jöhetnek további tabok (vélemények stb.) --}}
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-description" role="tabpanel">
+                            @php
+                                // Allergének: HTML eltávolítása és normalizálás
+                                $raw = strip_tags((string)($getitemdata->item_allergens ?? ''));
+                                $raw = str_replace([';', ' '], [',', ''], $raw);
+                                $parts = array_filter(array_map('trim', explode(',', $raw)), fn($x) => $x !== '');
+                                $displayAllergens = implode(',', $parts);
+                            @endphp
+
+                            {{-- csak akkor jelenjen meg, ha van allergén --}}
+                            @if ($displayAllergens !== '')
+                                <div class="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                    <a href="javascript:void(0)"
+                                       class="d-inline-flex align-items-center gap-2 text-decoration-none"
+                                       onclick="itemsallergens('{{ $getitemdata->id }}','{{ route('get_item_allergens') }}')"
+                                       aria-label="Allergének megnyitása">
+                        <span class="btn btn-sm btn-outline-info p-1 lh-1">
+                            <i class="fa-solid fa-info"></i>
+                        </span>
+                                        <span class="fw-600">{{ trans('labels.allergens') }}:</span>
+                                    </a>
+                                    <span class="text-muted">{{ $displayAllergens }}</span>
+                                    <a href="{{ url('alergens.html') }}" class="ms-2 text-decoration-underline small">
+                                        {{ __('allergén táblázat') }}
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+            @if (@helper::checkaddons('product_review'))
                             @if (@helper::checkaddons('customer_login'))
                                 @if (helper::appdata()->login_required == 1)
                                     <li class="nav-item" role="presentation">

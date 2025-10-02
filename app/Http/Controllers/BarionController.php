@@ -448,35 +448,6 @@ class BarionController extends Controller
                     }
                 }
 
-
-                // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                // CSAK EMAIL-BLOKK: ha be van jelentkezve a user és engedélyezett a levél
-                if ($checkuser && (int)$checkuser->is_mail === 1) {
-                    try {
-                        $itemdata = \App\Models\OrderDetails::where('order_id', $o->id)->get();
-                        \helper::create_order_invoice(
-                            $checkuser->email,
-                            $checkuser->name,
-                            $o->order_number,
-                            $o,
-                            $itemdata
-                        );
-                        \App\Models\PaymentLog::create([
-                            'payment_id' => $paymentId,
-                            'event'      => 'EMAIL_SENT',
-                            'message'    => 'Order invoice sent to logged-in user'
-                        ]);
-                    } catch (\Throwable $e) {
-                        \Log::warning('Order email send failed: '.$e->getMessage());
-                        \App\Models\PaymentLog::create([
-                            'payment_id' => $paymentId,
-                            'event'      => 'EMAIL_ERROR',
-                            'message'    => $e->getMessage()
-                        ]);
-                    }
-                }
-                // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
                 // success URL eltárolása (after redirect-hez)
                 \Illuminate\Support\Facades\Cache::put(
                     'barion_success_url_'.$paymentId,
