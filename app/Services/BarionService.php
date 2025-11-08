@@ -26,7 +26,7 @@ class BarionService
     /**
      * @param string $env 'test' vagy 'prod'
      */
-    public function __construct(string $env = 'test')
+    public function __construct(string $env = 'prod')
     {
         $this->env = $env;
         $this->cfg = BarionSetting::where('env', $env)->where('is_enabled', 1)->firstOrFail();

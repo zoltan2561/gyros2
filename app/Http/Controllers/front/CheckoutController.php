@@ -84,6 +84,22 @@ class CheckoutController extends Controller
 
         $taxArr['tax'] = $tax_name;
         $taxArr['rate'] = $tax_price;
+        //Szatyor
+        /*
+        $handlingFee = 30;
+        $totalTax = array_sum($tax_price) + $handlingFee;
+        $taxArr['sum'] = $totalTax; // opcionális, ha a view ezt használja összegzéshez
+
+// ha a nézet külön kezeli a total tax-ot, frissítsük ott is
+        if (!empty($tax_price)) {
+            // csak az utolsó adóhoz adjuk hozzá a 30-at, hogy ne legyen új sor
+            $lastIndex = count($tax_price) - 1;
+            $tax_price[$lastIndex] += $handlingFee;
+            $taxArr['rate'] = $tax_price;
+        }
+*/
+
+
         $shippingarea = Shippingarea::orderBy('reorder_id')->get();
         if (count($getcartlist) > 0) {
             return view('web.checkout.checkout', compact('getaddresses', 'getpaymentmethods', 'getcartlist', 'taxArr', 'getsettings', 'shippingarea'));
@@ -113,9 +129,9 @@ class CheckoutController extends Controller
         // 2) STATIKUS NYITVATARTÁS: 08:00–22:00 minden nap  ⬇⬇⬇
         $now   = Carbon::now();
         $open  = Carbon::create($now->year, $now->month, $now->day, 8, 0, 0, $now->timezone);
-        $close = Carbon::create($now->year, $now->month, $now->day, 24, 0, 0, $now->timezone);
+        $close = Carbon::create($now->year, $now->month, $now->day, 21, 30, 0, $now->timezone);
 
-        // nyitva: 08:00-tól 22:00-ig (22:00-kor már zárva)
+        // nyitva: 08:00-tól 22:00-ig (21:30-kor már zárva)
         if (!($now->greaterThanOrEqualTo($open) && $now->lessThan($close))) {
             return response()->json(['status' => 0, 'message' => trans('messages.restaurant_closed')], 200);
         }
@@ -295,7 +311,8 @@ class CheckoutController extends Controller
 
                 // 1) Szállítási díj → zóna → min rendelés
                 $dc = (int) round($toFloat($delivery_charge));
-                $minRequired = ($dc <= 1100) ? 2500 : (($dc <= 1900) ? 4900 : 5900);
+                $minRequired = ($dc <= 560) ? 500 : (($dc <= 760) ? 3900 : (($dc <= 1900) ? 4900 : 5900));
+
 
                 // 2) VÉGÖSSZEG (grand_total) a limithez
                 //$gt = (int) round($toFloat($grand_total));             // pl. 5000
@@ -313,6 +330,8 @@ class CheckoutController extends Controller
                 }
             }
             /* ======================================================================== */
+
+
 
 
 
@@ -523,7 +542,7 @@ class CheckoutController extends Controller
 
                     // grand_total a rendelésen (HUF). TODO:marad?
                     $grandTotalFt = (int) round($order->grand_total);
-                    $bonus = (int) (floor($grandTotalFt / 1000) * 50);
+                    $bonus = (int) (floor($grandTotalFt / 1000) * 0);
 
                     if ($bonus > 0) {
                         // Cache alapú idempotencia: ha már jóváírtuk ennél az order_id-nél, ne írjuk jóvá újra
@@ -702,7 +721,7 @@ class CheckoutController extends Controller
     private function computeLoyaltyBonusFt(int $grandTotalFt): int
     {
         if ($grandTotalFt <= 0) return 0;
-        return (int) (floor($grandTotalFt / 1000) * 50);
+        return (int) (floor($grandTotalFt / 1000) * 0);
     }
 
 

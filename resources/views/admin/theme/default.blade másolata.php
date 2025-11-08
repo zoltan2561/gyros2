@@ -175,65 +175,22 @@
     @endif
 
 </script>
+
+
+
+
 <script type="text/javascript">
     // --- New Notification + 2 percenkénti hang, amíg a popup nyitva van ---
+    var noticount = 0;
     var orderReminderTimer = null;
-    var isOrderModalOpen   = false;
-    var reminderAudio      = null;
+    var isOrderModalOpen = false;
+    var reminderAudio = null;
 
-    // számláló + e-mail flag (lokális)
+    // ÚJ: számláló + egyszeri e-mail flag
     var reminderHitCount = 0;
     var emailAlertSent   = false;
 
-    // ===== ÚJ: cross-tab csatorna + lokális storage kulcsok =====
-    var ORDERS_CH = null;
-    try { ORDERS_CH = new BroadcastChannel('gc_orders'); } catch(e) {}
-    function bcSend(msg){ if (ORDERS_CH) ORDERS_CH.postMessage(msg); }
-
-    window.addEventListener('storage', function(ev){
-        if (!ev.key) return;
-        // ha valaki ACK-olt vagy e-mailt jelölt, erre is reagálunk
-        if (ev.key.startsWith('gc_ack_') || ev.key.startsWith('gc_mail_')) onSharedFlagChange();
-    });
-    if (ORDERS_CH) {
-        ORDERS_CH.onmessage = function(ev){
-            if (!ev.data) return;
-            if (ev.data.type === 'ACK' || ev.data.type === 'MAIL_SENT') onSharedFlagChange();
-        }
-    }
-
-    function batchIdFromCount(count){
-        // azonosító az adott “hullámra”; most a count-ot használjuk
-        return String(count || 0);
-    }
-    function setAck(batchId){
-        try { localStorage.setItem('gc_ack_'+batchId, '1'); } catch(e){}
-        bcSend({type:'ACK', batchId: batchId});
-    }
-    function isAcked(batchId){
-        return (localStorage.getItem('gc_ack_'+batchId) === '1');
-    }
-    function markMailSent(batchId){
-        try { localStorage.setItem('gc_mail_'+batchId, '1'); } catch(e){}
-        bcSend({type:'MAIL_SENT', batchId: batchId});
-    }
-    function isMailSent(batchId){
-        return (localStorage.getItem('gc_mail_'+batchId) === '1');
-    }
-    function onSharedFlagChange(){
-        // ha valahol ACK-oltak, állítsuk le a helyi ismétlést és zárjuk a modált
-        var cur = localStorage.getItem('count') || '0';
-        if (isAcked(cur)) {
-            if (orderReminderTimer) { clearInterval(orderReminderTimer); orderReminderTimer = null; }
-            if (reminderAudio) { try { reminderAudio.pause(); } catch(e){} }
-            reminderHitCount = 0;
-            $('#order-modal').modal('hide');
-        }
-    }
-
-    // ===== /ÚJ =====
-
-    // modal állapotkövetés
+    // modal állapotkövetés (megbízhatóbb, mint :visible)
     $(document).on('shown.bs.modal', '#order-modal', function () {
         isOrderModalOpen = true;
     });
@@ -241,31 +198,23 @@
         isOrderModalOpen = false;
         if (orderReminderTimer) { clearInterval(orderReminderTimer); orderReminderTimer = null; }
         if (reminderAudio) { try { reminderAudio.pause(); } catch(e){} }
+        // ÚJ: reseteljük a számlálót és az e-mail flaget, ha bezárták
         reminderHitCount = 0;
-        // emailAlertSent NEM nullázzuk itt – batch váltáskor nullázzuk
+        emailAlertSent   = false;
     });
-
-    // ===== ÚJ: bármely OK gomb lenyomásakor ACK + broadcast + storage =====
-    $(document).on('click', '#order-modal .btn, #order-modal [data-bs-dismiss="modal"]', function(){
-        var cur = localStorage.getItem('count') || '0';
-        setAck(cur);
-    });
-    // ===== /ÚJ =====
 
     function maybeSendEmailAlert(currentCount) {
-        var bid = batchIdFromCount(currentCount);
-        if (isAcked(bid)) return;             // ha bárhol ACK-oltak, nincs e-mail
-        if (isMailSent(bid)) return;          // ha már ment e-mail, nem küldünk újra
-
-        if (reminderHitCount >= 8 && !emailAlertSent) {   // 8 próbálkozás után
-            emailAlertSent = true;                          // helyi védelem
-            markMailSent(bid);                              // cross-tab védelem
+        if (reminderHitCount >= 8 && !emailAlertSent) {  //3 problakozas utan
+            // egyszer küldünk, aztán nem spammelünk
+            emailAlertSent = true;
             $.ajax({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-                url: "{{ url('admin/order-unprocessed-alert') }}",
+                url: "{{ url('admin/order-unprocessed-alert') }}",   // lásd a route-ot lejjebb
                 method: 'POST',
                 dataType: 'json',
-                data: { count: currentCount }
+                data: {
+                    count: currentCount    // opcionális infó a backendre
+                }
             });
         }
     }
@@ -278,17 +227,11 @@
         if (orderReminderTimer) return; // már fut
 
         orderReminderTimer = setInterval(function () {
-            var bid = batchIdFromCount(currentCount);
-            if (isAcked(bid)) { // ha időközben ACK lett valahol, álljunk le
-                clearInterval(orderReminderTimer);
-                orderReminderTimer = null;
-                return;
-            }
-
             if (isOrderModalOpen) {
                 try {
                     reminderAudio.currentTime = 0;
                     reminderAudio.play().catch(function(){});
+                    // ÚJ: minden ismétlés számít
                     reminderHitCount++;
                     maybeSendEmailAlert(currentCount);
                 } catch(e){}
@@ -296,7 +239,8 @@
                 clearInterval(orderReminderTimer);
                 orderReminderTimer = null;
             }
-        }, 120000); // 2 perc
+        }, 120000); // 120 000 ms = 2 perc
+        //TODO: teszteléshez 15 mp
     }
 
     (function noti() {
@@ -313,50 +257,39 @@
                 $('#notificationcount').text(current > 9 ? (current + "+") : current);
 
                 if (current !== 0 && current !== prev) {
-                    // ===== ÚJ: batch váltás – reseteljük a lokális számlálót és flaget =====
-                    reminderHitCount = 0;
-                    emailAlertSent   = false;
-                    // új batch-hez töröljük az e-mail flaget (hátha előzőből megmaradt)
-                    try { localStorage.removeItem('gc_mail_' + batchIdFromCount(prev)); } catch(e){}
-                    // ack flag maradhat csak az előző batchre; az újra úgyis nincs
-                    // ===== /ÚJ =====
-
                     localStorage.setItem("count", String(current));
 
                     var $modal   = $("#order-modal");
                     var soundUrl = "{{ url(env('ASSETSPATHURL')) }}/admin-assets/notification/" + response.noti;
 
-                    // ha erre a batchre már ACK-olt valaki, ne is nyissunk modált
-                    if (!isAcked(batchIdFromCount(current))) {
-                        $modal.modal('show');
+                    // popup fel és első hang
+                    $modal.modal('show');
 
-                        if (!reminderAudio || reminderAudio.src !== soundUrl) {
-                            reminderAudio = new Audio(soundUrl);
-                            reminderAudio.preload = 'auto';
-                        }
-                        // első lejátszás
-                        reminderAudio.currentTime = 0;
-                        reminderAudio.play().catch(function(){});
-
-                        // számláló indul
-                        reminderHitCount = 1;
-                        maybeSendEmailAlert(current);
-
-                        // 2 percenkénti emlékeztető, amíg nyitva van (és nincs ACK)
-                        startOrderReminder(soundUrl, current);
+                    if (!reminderAudio || reminderAudio.src !== soundUrl) {
+                        reminderAudio = new Audio(soundUrl);
+                        reminderAudio.preload = 'auto';
                     }
+                    // első lejátszás
+                    reminderAudio.currentTime = 0;
+                    reminderAudio.play().catch(function(){});
+
+                    // ÚJ: első lejátszás is számít
+                    reminderHitCount = 1;
+                    emailAlertSent   = false; // új batchnél nullázzuk
+                    maybeSendEmailAlert(current);
+
+                    // 2 percenkénti emlékeztető, amíg nyitva van
+                    startOrderReminder(soundUrl, current);
 
                 } else if (current !== prev) {
                     localStorage.setItem("count", String(current));
                 }
 
-                setTimeout(noti, 6000); // 6 mp-enként poll
+                setTimeout(noti, 6000); // 5 mp-enként poll
             }
         });
     })();
 </script>
-
-
 
 
 

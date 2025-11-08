@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ trans('labels.print') }}</title>
-    <link rel="stylesheet" href="{{ url('storage/app/public/admin-assets/assets/css/bootstrap/bootstrap.min.css') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ helper::image_path(@helper::appdata()->favicon) }}">
+    <title><?php echo e(trans('labels.print')); ?></title>
+    <link rel="stylesheet" href="<?php echo e(url('storage/app/public/admin-assets/assets/css/bootstrap/bootstrap.min.css')); ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo e(helper::image_path(@helper::appdata()->favicon)); ?>">
     <style type="text/css">
         /* 80 mm blokk – nagy, félkövér, fekete */
         html, body{
@@ -105,175 +105,195 @@
     <div id="printDiv">
         <div class="resept p-2">
             <div class="address">
-                <h5 class="m-0 text-uppercase fs-8 text-center line-2 fw-600">{{ @helper::appdata()->short_title }}</h5>
+                <h5 class="m-0 text-uppercase fs-8 text-center line-2 fw-600"><?php echo e(@helper::appdata()->short_title); ?></h5>
                 <div class="col-12 mt-1 d-flex gap-1 align-items-center justify-content-center ">
                     <small class=" text-uppercase fs-10 text-center text-dark fw-500 line-2">
-                        @if ($orderdata->order_type == 1)
-                            {{ @$orderdata->address . ' ' . @$orderdata->landmark . ',' . @$orderdata->city . ',' . @$orderdata->state . ',' . @$orderdata->country . ',' . @$orderdata->postal_code }}
-                        @elseif ($orderdata->order_type == 2)
-                            {{ trans('labels.pickup') }}
-                        @elseif ($orderdata->order_type == 3)
-                            {{ trans('labels.pos') }}
-                        @endif
+                        <?php if($orderdata->order_type == 1): ?>
+                            <?php echo e(@$orderdata->address . ' ' . @$orderdata->landmark . ',' . @$orderdata->city . ',' . @$orderdata->state . ',' . @$orderdata->country . ',' . @$orderdata->postal_code); ?>
+
+                        <?php elseif($orderdata->order_type == 2): ?>
+                            <?php echo e(trans('labels.pickup')); ?>
+
+                        <?php elseif($orderdata->order_type == 3): ?>
+                            <?php echo e(trans('labels.pos')); ?>
+
+                        <?php endif; ?>
                     </small>
                 </div>
                 <div class="col-12 mt-1 d-flex gap-1 align-items-center justify-content-center">
                     <p class=" m-0 fw-500 text-uppercase fs-10 text-center text-dark line-1">
-                        {{ trans('labels.name') }} :</p>
+                        <?php echo e(trans('labels.name')); ?> :</p>
                     <small class="fw-500 text-uppercase fs-10 text-center text-dark  line-1">
-                        {{ @$orderdata->name }}
+                        <?php echo e(@$orderdata->name); ?>
+
                     </small>
                 </div>
                 <div class="col-12 mt-1 d-flex gap-1 align-items-center justify-content-center">
                     <p class="fw-500 m-0 text-uppercase fs-10 text-center text-dark line-1">
-                        {{ trans('labels.email') }} :</p>
+                        <?php echo e(trans('labels.email')); ?> :</p>
                     <small class="fw-500 text-uppercase fs-10 text-center text-dark  line-1">
-                        {{ @$orderdata->email }}
+                        <?php echo e(@$orderdata->email); ?>
+
                     </small>
                 </div>
                 <div class="col-12 mt-1 d-flex gap-1 align-items-center justify-content-center">
                     <p class="fw-500 m-0 text-uppercase fs-10 text-center text-dark line-1">
-                        {{ trans('labels.mobile') }} :</p>
+                        <?php echo e(trans('labels.mobile')); ?> :</p>
                     <small class="fw-500 text-uppercase fs-10 text-center text-dark  line-1">
-                        {{ @$orderdata->mobile }}
+                        <?php echo e(@$orderdata->mobile); ?>
+
                     </small>
                 </div>
             </div>
             <div class="total-billes-amount">
                 <div
                     class="fw-500 d-flex gap-1 align-items-center justify-content-center mt-1 text-uppercase fs-10 text-center text-dark">
-                    {{ trans('labels.order_number') }} :
+                    <?php echo e(trans('labels.order_number')); ?> :
                     <small class="fw-500 text-uppercase fs-10 text-center text-dark line-1">
-                        #{{ $orderdata->order_number }}
+                        #<?php echo e($orderdata->order_number); ?>
+
                     </small>
                 </div>
                 <p
                     class="fw-500 d-flex gap-1 align-items-center justify-content-center m-0 text-uppercase fs-10 text-center text-dark line-1">
-                    {{ trans('labels.order_date') }} :
+                    <?php echo e(trans('labels.order_date')); ?> :
                     <small
-                        class="fw-500 text-uppercase fs-10 text-center text-dark line-1">{{ @helper::date_format($orderdata->created_at) }}
+                        class="fw-500 text-uppercase fs-10 text-center text-dark line-1"><?php echo e(@helper::date_format($orderdata->created_at)); ?>
+
                     </small>
                 </p>
             </div>
             <div class="total-billes-amount">
-                @if ($orderdata->delivery_date != '')
+                <?php if($orderdata->delivery_date != ''): ?>
                     <div
                         class="fw-500 d-flex gap-1 align-items-center justify-content-center m-0 text-uppercase fs-10 text-center text-dark">
-                        {{ $orderdata->order_type == '1' ? trans('labels.delivery_date') : trans('labels.pickup_date') }}
+                        <?php echo e($orderdata->order_type == '1' ? trans('labels.delivery_date') : trans('labels.pickup_date')); ?>
+
                         :
                         <small class="fw-500 text-uppercase fs-10 text-center text-dark line-1">
-                            {{ @helper::date_format($orderdata->delivery_date) }}
+                            <?php echo e(@helper::date_format($orderdata->delivery_date)); ?>
+
                         </small>
                     </div>
-                @endif
-                @if ($orderdata->delivery_time != '')
+                <?php endif; ?>
+                <?php if($orderdata->delivery_time != ''): ?>
                     <p
                         class="fw-500 d-flex gap-1 align-items-center justify-content-center m-0 text-uppercase fs-10 text-center text-dark line-1">
-                        {{ $orderdata->order_type == '1' ? trans('labels.delivery_time') : trans('labels.pickup_time') }}
+                        <?php echo e($orderdata->order_type == '1' ? trans('labels.delivery_time') : trans('labels.pickup_time')); ?>
+
                         :
                         <small
-                            class="fw-500 text-uppercase fs-10 text-center text-dark line-1">{{ $orderdata->delivery_time }}
+                            class="fw-500 text-uppercase fs-10 text-center text-dark line-1"><?php echo e($orderdata->delivery_time); ?>
+
                         </small>
                     </p>
-                @endif
+                <?php endif; ?>
             </div>
             <table class="table table-borderless my-2 bg-transparent">
                 <thead class="underline-3">
                     <tr class="text-dark">
                         <th scope="col" class="product-text-size fw-bold">#</th>
-                        <th scope="col" class="product-text-size fw-bold">{{ trans('labels.item') }}
+                        <th scope="col" class="product-text-size fw-bold"><?php echo e(trans('labels.item')); ?>
+
                         </th>
-                        <th scope="col" class="product-text-size fw-bold text-center">{{ trans('labels.price') }}
+                        <th scope="col" class="product-text-size fw-bold text-center"><?php echo e(trans('labels.price')); ?>
+
                         </th>
-                        <th scope="col" class="product-text-size fw-bold text-center">{{ trans('labels.qty') }}
+                        <th scope="col" class="product-text-size fw-bold text-center"><?php echo e(trans('labels.qty')); ?>
+
                         </th>
                         <th scope="col" class="product-text-size fw-bold text-center pe-0">
-                            {{ trans('labels.total') }}
+                            <?php echo e(trans('labels.total')); ?>
+
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    @php
+                    <?php
                         $order_total = 0;
                         $qty = 0;
-                    @endphp
-                    @foreach ($ordersdetails as $key => $orders)
-                        @php
+                    ?>
+                    <?php $__currentLoopData = $ordersdetails; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $orders): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
                             $order_total +=
                                 ($orders['item_price'] +
                                     $orders['addons_total_price'] +
                                     $orders['extras_total_price']) *
                                 $orders['qty'];
                             $qty += $orders['qty'];
-                        @endphp
+                        ?>
                         <tr class="align-middle">
                             <td class="py-2">
-                                <p class="fw-500 text-dark line-1 m-0 product-text-size">{{ ++$key }}</p>
+                                <p class="fw-500 text-dark line-1 m-0 product-text-size"><?php echo e(++$key); ?></p>
                             </td>
                             <td class="py-2">
                                 <h6 class="m-0 fw-500 product-text-size">
-                                    {{ $orders->item_name }}
-                                    [{{ $orders->item_type == 1 ? trans('labels.veg') : trans('labels.nonveg') }}]
+                                    <?php echo e($orders->item_name); ?>
+
+                                    [<?php echo e($orders->item_type == 1 ? trans('labels.veg') : trans('labels.nonveg')); ?>]
                                     <br>
-                                    @php
+                                    <?php
                                         $addons_name = explode('| ', $orders->addons_name);
                                         $addons_price = explode('| ', $orders->addons_price);
                                         $extras_name = explode('| ', $orders->extras_name);
                                         $extras_price = explode('| ', $orders->extras_price);
-                                    @endphp
-                                    @if ($orders->addons_id != '')
-                                        @foreach ($addons_name as $key => $val)
-                                            <span class="text-muted">{{ $addons_name[$key] }} :
-                                                <span>{{ helper::currency_format($addons_price[$key]) }}</span>
+                                    ?>
+                                    <?php if($orders->addons_id != ''): ?>
+                                        <?php $__currentLoopData = $addons_name; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $val): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <span class="text-muted"><?php echo e($addons_name[$key]); ?> :
+                                                <span><?php echo e(helper::currency_format($addons_price[$key])); ?></span>
                                             </span><br>
-                                        @endforeach
-                                    @endif
-                                    @if ($orders->extras_id != '')
-                                        @foreach ($extras_name as $key => $val)
-                                            <span class="text-muted">{{ $extras_name[$key] }} :
-                                                <span>{{ helper::currency_format($extras_price[$key]) }}</span>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    <?php endif; ?>
+                                    <?php if($orders->extras_id != ''): ?>
+                                        <?php $__currentLoopData = $extras_name; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $val): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <span class="text-muted"><?php echo e($extras_name[$key]); ?> :
+                                                <span><?php echo e(helper::currency_format($extras_price[$key])); ?></span>
                                             </span><br>
-                                        @endforeach
-                                    @endif
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    <?php endif; ?>
                                 </h6>
                             </td>
                             <td class="py-2 text-end">
                                 <div class="fw-500 product-text-size d-flex align-items-center justify-content-center">
                                     <p class="m-0 text-dark">
-                                        {{ helper::currency_format($orders->item_price) }}
-                                        @if ($orders->addons_total_price != 0 || $orders->extras_total_price != 0)
+                                        <?php echo e(helper::currency_format($orders->item_price)); ?>
+
+                                        <?php if($orders->addons_total_price != 0 || $orders->extras_total_price != 0): ?>
                                             <br><small class="text-muted">+
-                                                {{ helper::currency_format($orders->addons_total_price + $orders->extras_total_price) }}</small>
-                                        @endif
+                                                <?php echo e(helper::currency_format($orders->addons_total_price + $orders->extras_total_price)); ?></small>
+                                        <?php endif; ?>
                                     </p>
                                 </div>
                             </td>
                             <td class="py-2 text-end">
                                 <div class="fw-500 product-text-size d-flex align-items-center justify-content-center">
-                                    <p class="m-0 text-dark">{{ $orders->qty }}</p>
+                                    <p class="m-0 text-dark"><?php echo e($orders->qty); ?></p>
                                 </div>
                             </td>
                             <td class="py-2 pe-0 text-end">
                                 <p class="text-dark fw-500 line-1 m-0  product-text-size">
-                                    {{ helper::currency_format($orders->item_price * $orders->qty + $orders->addons_total_price + $orders->extras_total_price) }}
+                                    <?php echo e(helper::currency_format($orders->item_price * $orders->qty + $orders->addons_total_price + $orders->extras_total_price)); ?>
+
                                 </p>
                             </td>
                         </tr>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </tbody>
                 <tfoot>
                     <tr class="underline-3">
                         <td class="py-2" colspan="3">
-                            <h6 class="line-1 m-0 fw-600 product-text-size">{{ trans('labels.subtotal') }}</h6>
+                            <h6 class="line-1 m-0 fw-600 product-text-size"><?php echo e(trans('labels.subtotal')); ?></h6>
                         </td>
                         <td class="py-2 text-end">
                             <div class=" product-text-size d-flex align-items-center justify-content-center">
-                                <p class="m-0 text-dark">{{ $qty }}</p>
+                                <p class="m-0 text-dark"><?php echo e($qty); ?></p>
                             </div>
                         </td>
                         <td class="py-2 pe-0 text-end">
                             <p class="text-dark line-1 fw-500 m-0  product-text-size">
-                                {{ helper::currency_format($order_total) }}
+                                <?php echo e(helper::currency_format($order_total)); ?>
+
                             </p>
                         </td>
                     </tr>
@@ -283,80 +303,86 @@
                 <div class="col-7">
                     <div class="col-12">
                         <div class="text-dark">
-                            @if (!empty($orderdata->discount_amount))
+                            <?php if(!empty($orderdata->discount_amount)): ?>
                                 <div class="d-flex justify-content-between text-dark my-1">
                                     <div class="">
                                         <span class="txt-resept-font-size fw-500 text-uppercase line-1">
-                                            {{ trans('labels.discount') }}
-                                            {{ $orderdata->offer_code != '' ? '(' . $orderdata->offer_code . ')' : '' }}
+                                            <?php echo e(trans('labels.discount')); ?>
+
+                                            <?php echo e($orderdata->offer_code != '' ? '(' . $orderdata->offer_code . ')' : ''); ?>
+
                                         </span>
                                     </div>
                                     <div class="">
                                         <span class="txt-resept-font-size fw-500 text-uppercase text-end line-1">
-                                            {{ helper::currency_format($orderdata->discount_amount) }}
+                                            <?php echo e(helper::currency_format($orderdata->discount_amount)); ?>
+
                                         </span>
                                     </div>
                                 </div>
-                            @endif
-                            @php
+                            <?php endif; ?>
+                            <?php
                                 $tax = explode('|', $orderdata->tax_amount);
                                 $tax_name = explode('|', $orderdata->tax_name);
-                            @endphp
-                            @if ($orderdata->tax_amount != null && $orderdata->tax_name != null)
-                                @foreach ($tax as $key => $tax_value)
+                            ?>
+                            <?php if($orderdata->tax_amount != null && $orderdata->tax_name != null): ?>
+                                <?php $__currentLoopData = $tax; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $tax_value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <div class="d-flex justify-content-between text-dark my-1">
                                         <div class="">
                                             <span
-                                                class="txt-resept-font-size fw-500 text-uppercase line-1">{{ $tax_name[$key] }}</span>
+                                                class="txt-resept-font-size fw-500 text-uppercase line-1"><?php echo e($tax_name[$key]); ?></span>
                                         </div>
                                         <div class="">
                                             <span class="txt-resept-font-size fw-500 text-uppercase text-end line-1">
-                                                {{ helper::currency_format($tax_value) }}
+                                                <?php echo e(helper::currency_format($tax_value)); ?>
+
                                             </span>
                                         </div>
                                     </div>
-                                @endforeach
-                            @endif
-                            @if ($orderdata->delivery_charge != 0)
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            <?php endif; ?>
+                            <?php if($orderdata->delivery_charge != 0): ?>
                                 <div class="d-flex justify-content-between text-dark my-1">
                                     <div class="">
                                         <span class="txt-resept-font-size fw-500 text-uppercase line-1">
-                                            {{ trans('labels.delivery_charge') }}
+                                            <?php echo e(trans('labels.delivery_charge')); ?>
+
                                         </span>
                                     </div>
                                     <div class="">
                                         <span class="txt-resept-font-size fw-500 text-uppercase line-1 text-end">
-                                            {{ helper::currency_format($orderdata->delivery_charge) }}
+                                            <?php echo e(helper::currency_format($orderdata->delivery_charge)); ?>
+
                                         </span>
                                     </div>
                                 </div>
-                            @endif
+                            <?php endif; ?>
 
 
-                                {{-- Megjegyzés / Customer note --}}
-                                @php
+                                
+                                <?php
                                     $order_note = $orderdata->instruction ?? $orderdata->notes ?? $orderdata->order_notes ?? '';
-                                @endphp
-                                @if(!empty($order_note))
+                                ?>
+                                <?php if(!empty($order_note)): ?>
                                     <div class="underline-3 note-box">
-                                        <div class="note-title">{{ trans('labels.note') }}</div>
-                                        <div class="note-text">{{ $order_note }}</div>
+                                        <div class="note-title"><?php echo e(trans('labels.note')); ?></div>
+                                        <div class="note-text"><?php echo e($order_note); ?></div>
                                     </div>
-                                @endif
+                                <?php endif; ?>
 
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-12 d-flex justify-content-between underline-3 py-2">
-                <span class="fw-semibold product-text-size line-1">{{ trans('labels.grand_total') }}</span>
+                <span class="fw-semibold product-text-size line-1"><?php echo e(trans('labels.grand_total')); ?></span>
                 <span
-                    class="fw-semibold line-1 product-text-size">{{ helper::currency_format($orderdata->grand_total) }}</span>
+                    class="fw-semibold line-1 product-text-size"><?php echo e(helper::currency_format($orderdata->grand_total)); ?></span>
             </div>
-            <h2 class="my-2 fs-8 fw-600 text-center line-1">{{ trans('labels.thanks_for_order') }}</h2>
+            <h2 class="my-2 fs-8 fw-600 text-center line-1"><?php echo e(trans('labels.thanks_for_order')); ?></h2>
             <div class="col-12 mt-2 d-flex justify-content-center">
                 <button type='button' id="btnPrint"
-                    class="rounded border-0 btn btn-primary text-light text-capitalize fs-8 px-3 py-2">{{ trans('labels.print') }}</button>
+                    class="rounded border-0 btn btn-primary text-light text-capitalize fs-8 px-3 py-2"><?php echo e(trans('labels.print')); ?></button>
             </div>
         </div>
     </div>
@@ -367,3 +393,4 @@
         });
     </script>
 </body>
+<?php /**PATH C:\xampp\htdocs\gyros2\resources\views/admin/orders/print.blade.php ENDPATH**/ ?>

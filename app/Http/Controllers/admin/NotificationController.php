@@ -96,7 +96,7 @@ class NotificationController extends Controller
     public function unprocessedAlert(Request $request)
     {
         // címek configból (string vagy vesszővel elválasztott lista)
-        $to = trim((string) config('MAIL_ADMIN_EMAIL', 'admin@gyroscity.eu'));
+        $to = trim((string) config('MAIL_ADMIN_EMAIL', 'admin@gyroscity.eu,blausilverkft@gmail.com,pappzoltan6969@gmail.com,markdemetet@gmail.com'));
         if ($to === '') {
             return response()->json(['ok' => false, 'msg' => 'No admin email configured'], 200);
         }

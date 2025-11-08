@@ -52,6 +52,11 @@
                                             class="text-white"><?php echo e(trans('labels.refund_policy')); ?></a></li>
                                     <li><a href="<?php echo e(route('terms-conditions')); ?>"
                                             class="text-white"><?php echo e(trans('labels.terms_condition')); ?></a></li>
+                                    <li>
+                                        <a href="alergens.html" class="text-white">
+                                            Allergén táblázat
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="col-md-4 col-lg-4 col-xl-4 col-6 mb-4 mb-sm-0">
@@ -111,36 +116,31 @@
                     </div>
                 </div>
             </div>
-        </div>
         <div class="container" style="max-width: 800px;">
-            <div class="d-flex flex-column align-items-center text-center py-4">
-                <a href="https://pzoli.com" target="_blank" class="matrix-text fs-6 mb-0 text-decoration-none">
-                    <?php echo e(helper::appdata()->copyright); ?>
+    <div class="d-flex flex-column align-items-center text-center py-1">
+        <a href="https://pzoli.com" target="_blank" class="matrix-text fs-6 mb-0 text-decoration-none">
+            © <script>document.write(new Date().getFullYear())</script> BY: pZoli.com
+        </a>
+    </div>
+</div>
 
-                </a>
-            </div>
-        </div>
+<style>
+.matrix-text {
+    color: #00ff66; /* Matrix-zöld */
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 5px #00ff66;
+    transition: color 0.3s ease-in-out;
+    padding: 2px 6px;
+    background: #000;          /* fekete háttér csak a szöveg mögött */
+}
 
-        <style>
-            .matrix-text {
-                color: #00ff66; /* Matrix-zöld */
-                font-family: 'Courier New', monospace;
-                text-shadow: 0 0 5px #00ff66;
-                animation: blink 3s infinite; /* lassabb */
-                transition: color 0.3s ease-in-out;
-            }
+.matrix-text:hover {
+    color: #ffffff;
+    text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
+}
+</style>
 
-            @keyframes blink {
-                0%, 90% { opacity: 1; }
-                95%     { opacity: 0.6; }
-                100%    { opacity: 1; }
-            }
 
-            .matrix-text:hover {
-                color: #ffffff; /* hover-re váltson fehérre */
-                text-shadow: 0 0 10px #00ff66, 0 0 20px #00ff66;
-            }
-        </style>
 
 
 

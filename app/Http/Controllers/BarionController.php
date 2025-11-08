@@ -91,7 +91,7 @@ class BarionController extends Controller
             ];
 
             // Barion service meghívása – domainen fog működni, nincs localhost hardcode
-            $env    = app()->environment('production') ? 'prod' : 'test';
+            $env    = app()->environment('prod') ? 'prod' : 'test';
             /** @var BarionService $barion */
             $barion = app(BarionService::class, ['env' => $env]);
 
